@@ -21,6 +21,13 @@ fn main() -> Result<()> {
     enable_raw_mode()?;
 
     let mut buffer = [0; 1];
-    while io::stdin().read(&mut buffer)? == 1 && buffer[0] != b'q' {}
+    while io::stdin().read(&mut buffer)? == 1 && buffer[0] != b'q' {
+        let byte = buffer[0] as char;
+        if byte.is_control() {
+            println!("{}", byte as u8);
+        } else {
+            println!("{} ('{}')", byte as u8, byte);
+        }
+    }
     Ok(())
 }
