@@ -1,5 +1,5 @@
 mod terminal;
-mod editor;
+mod input;
 
 use anyhow::Result;
 
