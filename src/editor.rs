@@ -17,7 +17,7 @@ fn read_key() -> Result<u8> {
     }
 }
 
-pub fn process_keypress() -> Result<()>{
+pub fn process_keypress() -> Result<()> {
     let c = read_key()?;
     match c {
         c if c == ctrl_key!('q') => exit(0),
@@ -26,6 +26,7 @@ pub fn process_keypress() -> Result<()>{
     Ok(())
 }
 
-pub fn refresh_screen() {
-    io::stdout().write_all(b"\x1b[2J").unwrap();
+pub fn refresh_screen() -> Result<()> {
+    io::stdout().write_all(b"\x1b[2J").context("Failed to refresh screen")?;
+    Ok(())
 }
