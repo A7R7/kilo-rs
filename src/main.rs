@@ -1,10 +1,10 @@
-mod raw_mode;
+mod terminal;
 mod editor;
 
 use anyhow::Result;
 
 fn main() -> Result<()> {
-    raw_mode::enable_raw_mode()?;
+    terminal::enable_raw_mode()?;
 
     loop {
         editor::refresh_screen()?;
