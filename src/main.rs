@@ -30,9 +30,9 @@ fn main() -> Result<()> {
     while io::stdin().read(&mut buffer)? == 1 && buffer[0] != b'q' {
         let byte = buffer[0] as char;
         if byte.is_control() {
-            println!("{}", byte as u8);
+            print!("{}\r\n", byte as u8);
         } else {
-            println!("{} ('{}')", byte as u8, byte);
+            print!("{} ('{}')\r\n", byte as u8, byte);
         }
     }
     Ok(())
