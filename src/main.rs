@@ -1,7 +1,7 @@
 use std::io::{self, Read};
 use std::os::unix::io::AsFd;
 use nix::sys::termios::{tcgetattr, tcsetattr,
-    LocalFlags, InputFlags, OutputFlags, ControlFlags, SetArg};
+    LocalFlags, InputFlags, OutputFlags, ControlFlags, SpecialCharacterIndices, SetArg};
 use anyhow::{Context, Result};
 
 fn enable_raw_mode() -> Result<()> {
@@ -29,6 +29,9 @@ fn enable_raw_mode() -> Result<()> {
 
     termios.control_flags.insert(ControlFlags::CS8); // set the character size to 8 bits per byte
 
+    termios.control_chars[SpecialCharacterIndices::VMIN as usize] = 0;
+    termios.control_chars[SpecialCharacterIndices::VTIME as usize] = 1;
+
     tcsetattr(fd, SetArg::TCSAFLUSH, &termios)
         .context("Failed to set terminal attributes")?;
     Ok(())
@@ -37,13 +40,19 @@ fn enable_raw_mode() -> Result<()> {
 fn main() -> Result<()> {
     enable_raw_mode()?;
 
-    let mut buffer = [0; 1];
-    while io::stdin().read(&mut buffer)? == 1 && buffer[0] != b'q' {
+    let mut buffer = [0u8; 1];
+    loop {
+        buffer[0] = '\0' as u8;
+        io::stdin().read(&mut buffer)
+            .context("Failed to read input")?;
         let byte = buffer[0] as char;
         if byte.is_control() {
             print!("{}\r\n", byte as u8);
         } else {
             print!("{} ('{}')\r\n", byte as u8, byte);
+        }
+        if byte == 'q' {
+            break;
         }
     }
     Ok(())
