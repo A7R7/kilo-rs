@@ -11,23 +11,23 @@ fn enable_raw_mode() -> Result<()> {
         .context("Failed to get terminal attributes")?;
 
     termios.local_flags.remove(
-          LocalFlags::ECHO
-        | LocalFlags::ICANON
-        | LocalFlags::ISIG
-        | LocalFlags::IEXTEN
+          LocalFlags::ECHO    // avoid each key typed printed to the terminal
+        | LocalFlags::ICANON  // read input byte-by byte
+        | LocalFlags::ISIG    // turn off Ctrl-C and Ctrl-Z signals
+        | LocalFlags::IEXTEN  // disable Ctrl-V function
     );
 
     termios.input_flags.remove(
-          InputFlags::BRKINT
-        | InputFlags::ICRNL
-        | InputFlags::INPCK
-        | InputFlags::ISTRIP
-        | InputFlags::IXON
+          InputFlags::BRKINT  // break condition causes SIGINT signal sent to the program
+        | InputFlags::ICRNL   // make Ctrl-M return 13 instead of 10
+        | InputFlags::INPCK   // enable parity checking
+        | InputFlags::ISTRIP  // causes the 8th bit of each input byte to be stripped
+        | InputFlags::IXON    // disable Ctrl-S and Ctrl-Q
     );
 
-    termios.output_flags.remove(OutputFlags::OPOST);
+    termios.output_flags.remove(OutputFlags::OPOST); // Turn off all output processing
 
-    termios.control_flags.insert(ControlFlags::CS8);
+    termios.control_flags.insert(ControlFlags::CS8); // set the character size to 8 bits per byte
 
     tcsetattr(fd, SetArg::TCSAFLUSH, &termios)
         .context("Failed to set terminal attributes")?;
