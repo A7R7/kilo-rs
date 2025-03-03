@@ -1,6 +1,7 @@
 use std::io::{self, Read};
 use std::os::unix::io::AsFd;
-use nix::sys::termios::{tcgetattr, tcsetattr, LocalFlags, SetArg};
+use nix::sys::termios::{tcgetattr, tcsetattr,
+    LocalFlags, InputFlags, OutputFlags, SetArg};
 use anyhow::{Context, Result};
 
 fn enable_raw_mode() -> Result<()> {
@@ -12,10 +13,10 @@ fn enable_raw_mode() -> Result<()> {
     termios.local_flags.remove(LocalFlags::ECHO);
     termios.local_flags.remove(LocalFlags::ICANON);
     termios.local_flags.remove(LocalFlags::ISIG);
-    termios.local_flags.remove(LocalFlags::IXON);
+    termios.input_flags.remove(InputFlags::IXON);
     termios.local_flags.remove(LocalFlags::IEXTEN);
-    termios.local_flags.remove(LocalFlags::ICRNL);
-    termios.local_flags.remove(LocalFlags::OPOST);
+    termios.input_flags.remove(InputFlags::ICRNL);
+    termios.output_flags.remove(OutputFlags::OPOST);
 
     tcsetattr(fd, SetArg::TCSAFLUSH, &termios)
         .context("Failed to set terminal attributes")?;
