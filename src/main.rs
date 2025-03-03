@@ -10,16 +10,20 @@ fn enable_raw_mode() -> Result<()> {
     let mut termios = tcgetattr(fd)
         .context("Failed to get terminal attributes")?;
 
-    termios.local_flags.remove(LocalFlags::ECHO);
-    termios.local_flags.remove(LocalFlags::ICANON);
-    termios.local_flags.remove(LocalFlags::ISIG);
-    termios.local_flags.remove(LocalFlags::IEXTEN);
+    termios.local_flags.remove(
+          LocalFlags::ECHO
+        | LocalFlags::ICANON
+        | LocalFlags::ISIG
+        | LocalFlags::IEXTEN
+    );
 
-    termios.input_flags.remove(InputFlags::BRKINT);
-    termios.input_flags.remove(InputFlags::ICRNL);
-    termios.input_flags.remove(InputFlags::INPCK);
-    termios.input_flags.remove(InputFlags::ISTRIP);
-    termios.input_flags.remove(InputFlags::IXON);
+    termios.input_flags.remove(
+          InputFlags::BRKINT
+        | InputFlags::ICRNL
+        | InputFlags::INPCK
+        | InputFlags::ISTRIP
+        | InputFlags::IXON
+    );
 
     termios.output_flags.remove(OutputFlags::OPOST);
 
