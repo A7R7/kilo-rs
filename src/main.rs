@@ -8,6 +8,6 @@ fn main() -> Result<()> {
 
     loop {
         editor::refresh_screen()?;
-        editor::process_keypress()?
+        editor::process_keypress()?;
     }
 }

@@ -20,7 +20,10 @@ fn read_key() -> Result<u8> {
 pub fn process_keypress() -> Result<()> {
     let c = read_key()?;
     match c {
-        c if c == ctrl_key!('q') => exit(0),
+        c if c == ctrl_key!('q') => {
+            refresh_screen()?;
+            exit(0);
+        }
         _ => {},
     };
     Ok(())
@@ -28,5 +31,7 @@ pub fn process_keypress() -> Result<()> {
 
 pub fn refresh_screen() -> Result<()> {
     io::stdout().write_all(b"\x1b[2J").context("Failed to refresh screen")?;
+    io::stdout().write_all(b"\x1b[H").context("Failed to reposition cursor")?;
+    io::stdout().flush()?;
     Ok(())
 }
