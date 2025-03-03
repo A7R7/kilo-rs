@@ -15,6 +15,7 @@ fn enable_raw_mode() -> Result<()> {
     termios.local_flags.remove(LocalFlags::IXON);
     termios.local_flags.remove(LocalFlags::IEXTEN);
     termios.local_flags.remove(LocalFlags::ICRNL);
+    termios.local_flags.remove(LocalFlags::OPOST);
 
     tcsetattr(fd, SetArg::TCSAFLUSH, &termios)
         .context("Failed to set terminal attributes")?;
