@@ -1,5 +1,6 @@
 mod terminal;
 mod input;
+mod output;
 
 use anyhow::Result;
 
@@ -7,7 +8,7 @@ fn main() -> Result<()> {
     terminal::enable_raw_mode()?;
 
     loop {
-        editor::refresh_screen()?;
-        editor::process_keypress()?;
+        output::refresh_screen()?;
+        input::process_keypress()?;
     }
 }
