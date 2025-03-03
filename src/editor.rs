@@ -21,7 +21,7 @@ pub fn process_keypress() -> Result<()> {
     let c = read_key()?;
     match c {
         c if c == ctrl_key!('q') => {
-            refresh_screen()?;
+            clear_screen()?;
             exit(0);
         }
         _ => {},
@@ -29,9 +29,30 @@ pub fn process_keypress() -> Result<()> {
     Ok(())
 }
 
-pub fn refresh_screen() -> Result<()> {
+pub fn clear_screen() -> Result<()> {
     io::stdout().write_all(b"\x1b[2J").context("Failed to refresh screen")?;
+    io::stdout().flush()?;
+    Ok(())
+}
+
+pub fn reposition_cursor() -> Result<()> {
     io::stdout().write_all(b"\x1b[H").context("Failed to reposition cursor")?;
     io::stdout().flush()?;
+    Ok(())
+}
+
+fn draw_rows() -> Result<()> {
+    for y in 1..=24 {
+        io::stdout().write_all(b"~\r\n").context("Failed to draw rows")?;
+    }
+    io::stdout().flush()?;
+    Ok(())
+}
+
+pub fn refresh_screen() -> Result<()> {
+    clear_screen()?;
+    reposition_cursor()?;
+    draw_rows()?;
+    reposition_cursor()?;
     Ok(())
 }
