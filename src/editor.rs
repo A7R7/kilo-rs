@@ -1,4 +1,6 @@
-use std::io::{self, Read, Write};
+use crate::terminal;
+
+use std::io::{self, Write};
 use std::process::exit;
 use anyhow::{Result, Context};
 
@@ -6,19 +8,9 @@ macro_rules! ctrl_key {
     ($k:expr) => {($k as u8 & 0x1f) as u8};
 }
 
-fn read_key() -> Result<u8> {
-    let mut buffer = [0u8; 1];
-    loop {
-        match io::stdin().read(&mut buffer) {
-            Ok(_) => return Ok(buffer[0]),
-            Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => continue,
-            Err(e) => return Err(e).context("Failed to read key from stdin"),
-        }
-    }
-}
 
 pub fn process_keypress() -> Result<()> {
-    let c = read_key()?;
+    let c = terminal::read_key()?;
     match c {
         c if c == ctrl_key!('q') => {
             clear_screen()?;
@@ -42,7 +34,7 @@ pub fn reposition_cursor() -> Result<()> {
 }
 
 fn draw_rows() -> Result<()> {
-    for y in 1..=24 {
+    for _ in 1..=24 {
         io::stdout().write_all(b"~\r\n").context("Failed to draw rows")?;
     }
     io::stdout().flush()?;

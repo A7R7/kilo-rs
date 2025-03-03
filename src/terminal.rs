@@ -1,4 +1,4 @@
-use std::io;
+use std::io::{self, Read};
 use std::os::unix::io::AsFd;
 use nix::sys::termios::{tcgetattr, tcsetattr,
     LocalFlags, InputFlags, OutputFlags, ControlFlags, SpecialCharacterIndices, SetArg};
@@ -35,4 +35,15 @@ pub fn enable_raw_mode() -> Result<()> {
     tcsetattr(fd, SetArg::TCSAFLUSH, &termios)
         .context("Failed to set terminal attributes")?;
     Ok(())
+}
+
+pub fn read_key() -> Result<u8> {
+    let mut buffer = [0u8; 1];
+    loop {
+        match io::stdin().read(&mut buffer) {
+            Ok(_) => return Ok(buffer[0]),
+            Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => continue,
+            Err(e) => return Err(e).context("Failed to read key from stdin"),
+        }
+    }
 }
