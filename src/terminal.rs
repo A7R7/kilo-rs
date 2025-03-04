@@ -1,4 +1,6 @@
-use std::io::{self, Read};
+use crate::output;
+
+use std::io::{self, Read, Write};
 use std::os::unix::io::AsFd;
 use nix::sys::termios::{tcgetattr, tcsetattr,
     LocalFlags, InputFlags, OutputFlags, ControlFlags, SpecialCharacterIndices, SetArg};
@@ -46,4 +48,31 @@ pub fn read_key() -> Result<u8> {
             Err(e) => return Err(e).context("Failed to read key from stdin"),
         }
     }
+}
+
+fn get_cursor_position() -> Result<(u32, u32)> {
+    print!("\x1b[6n\r\n");
+
+    let mut buf = String::new();
+    let _ = io::stdin().read_to_string(&mut buf);
+
+    let mut x: u32 = 0;
+    let mut y: u32 = 0;
+    if let Some(buf) = buf.strip_prefix("\x1b[") {
+        if let Some(buf) = buf.strip_suffix("R") {
+            let parts: Vec<&str> = buf.split(';').collect();
+            if parts.len() == 2 {
+                y = parts[0].parse()?;
+                x = parts[1].parse()?;
+            }
+        }
+    }
+    Ok((x, y))
+}
+
+pub fn get_window_size() -> Result<(u32, u32)> {
+    print!("\x1b[999C\x1b[999B");
+    let ret = get_cursor_position();
+    output::reposition_cursor();
+    return ret;
 }
