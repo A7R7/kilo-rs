@@ -1,6 +1,4 @@
 use crate::editor::Editor;
-use crate::terminal;
-use crate::output;
 
 use std::process::exit;
 use anyhow::{Result, Context};
