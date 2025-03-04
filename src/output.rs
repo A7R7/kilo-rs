@@ -1,29 +1,23 @@
 use std::io::{self, Write};
+use anyhow::{Context, Result};
 
-pub fn clear_screen() -> Result<()> {
-    io::stdout().write_all(b"\x1b[2J").context("Failed to refresh screen")?;
-    io::stdout().flush()?;
-    Ok(())
+pub fn clear_screen() {
+    print!("\x1b[2J");
 }
 
-pub fn reposition_cursor() -> Result<()> {
-    io::stdout().write_all(b"\x1b[H").context("Failed to reposition cursor")?;
-    io::stdout().flush()?;
-    Ok(())
+pub fn reposition_cursor() {
+    print!("\x1b[H");
 }
 
-fn draw_rows() -> Result<()> {
+fn draw_rows() {
     for _ in 1..=24 {
-        io::stdout().write_all(b"~\r\n").context("Failed to draw rows")?;
+        print!("~\r\n");
     }
-    io::stdout().flush()?;
-    Ok(())
 }
 
-pub fn refresh_screen() -> Result<()> {
-    clear_screen()?;
-    reposition_cursor()?;
-    draw_rows()?;
-    reposition_cursor()?;
-    Ok(())
+pub fn refresh_screen() {
+    clear_screen();
+    reposition_cursor();
+    draw_rows();
+    reposition_cursor();
 }
