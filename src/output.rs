@@ -1,21 +1,28 @@
 use crate::editor::Editor;
+use std::io::{self, Write};
 use anyhow::{Context, Result};
 
 impl Editor {
     pub fn clear_screen() {
-        print!("\x1b[2J");
+        let mut stdout = io::stdout().lock();
+        stdout.write_all(b"\x1b[2J");
+        stdout.flush();
     }
 
     pub fn reposition_cursor() {
-        print!("\x1b[H");
+        let mut stdout = io::stdout().lock();
+        stdout.write_all(b"\x1b[H");
+        stdout.flush();
     }
 
     fn draw_rows(&self) {
         Self::reposition_cursor();
+        let mut stdout = io::stdout().lock();
         for _ in 1..= (self.screenrows - 1) {
-            print!("~\r\n");
+            stdout.write_all(b"~\r\n");
         }
-        print!("~");
+        stdout.write_all(b"~");
+        stdout.flush();
         Self::reposition_cursor();
     }
 

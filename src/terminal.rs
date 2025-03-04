@@ -52,7 +52,9 @@ impl Editor {
     }
 
     fn get_cursor_position() -> Result<(i32, i32)> {
-        print!("\x1b[6n\r\n");
+        let mut stdout = io::stdout().lock();
+        stdout.write_all(b"\x1b[6n\r\n");
+        stdout.flush();
 
         let mut buf = String::new();
         let _ = io::stdin().read_to_string(&mut buf);
@@ -72,7 +74,10 @@ impl Editor {
     }
 
     pub fn get_window_size() -> Result<(i32, i32)> {
-        print!("\x1b[999C\x1b[999B");
+        let mut stdout = io::stdout().lock();
+        stdout.write_all(b"\x1b[999C\x1b[999B");
+        stdout.flush();
+
         let ret = Self::get_cursor_position();
         Self::reposition_cursor();
         return ret;
