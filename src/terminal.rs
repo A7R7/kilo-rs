@@ -51,14 +51,14 @@ impl Editor {
         }
     }
 
-    fn get_cursor_position(&self) -> Result<(u32, u32)> {
+    fn get_cursor_position() -> Result<(i32, i32)> {
         print!("\x1b[6n\r\n");
 
         let mut buf = String::new();
         let _ = io::stdin().read_to_string(&mut buf);
 
-        let mut x: u32 = 0;
-        let mut y: u32 = 0;
+        let mut x: i32 = 0;
+        let mut y: i32 = 0;
         if let Some(buf) = buf.strip_prefix("\x1b[") {
             if let Some(buf) = buf.strip_suffix("R") {
                 let parts: Vec<&str> = buf.split(';').collect();
@@ -71,10 +71,10 @@ impl Editor {
         Ok((x, y))
     }
 
-    pub fn get_window_size(&self) -> Result<(u32, u32)> {
+    pub fn get_window_size() -> Result<(i32, i32)> {
         print!("\x1b[999C\x1b[999B");
-        let ret = self.get_cursor_position();
-        self.reposition_cursor();
+        let ret = Self::get_cursor_position();
+        Self::reposition_cursor();
         return ret;
     }
 }

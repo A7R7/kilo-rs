@@ -14,7 +14,7 @@ impl Editor {
         let c = self.read_key()?;
         match c {
             c if c == ctrl_key!('q') => {
-                self.clear_screen();
+                Self::clear_screen();
                 exit(0);
             }
             _ => {},
