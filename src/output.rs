@@ -43,7 +43,7 @@ impl Editor {
         buf.push_str(HIDE_CURSOR_CMD);
         buf.push_str(REPOSITION_CURSOR_CMD);
         buf.push_str(self.draw_rows_str().as_str());
-        buf.push_str(REPOSITION_CURSOR_CMD);
+        buf.push_str(self.move_cursor_str().as_str());
         buf.push_str(SHOW_CURSOR_CMD);
 
         let mut stdout = io::stdout().lock();
