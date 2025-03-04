@@ -2,10 +2,11 @@ use crate::editor::Editor;
 use std::io::{self, Write};
 use anyhow::{Context, Result};
 
-const CLEAR_SCREEN_CMD: &[u8] = b"\x1b[2J";
-const REPOSITION_CURSOR_CMD: &[u8] = b"\x1b[H";
-const HIDE_CURSOR_CMD: &[u8] = b"\x1b[?25l";
-const SHOW_CURSOR_CMD: &[u8] = b"\x1b[?25h";
+const CLEAR_SCREEN_CMD: &str = "\x1b[2J";
+const CLEAR_LINE_CMD: &str = "\x1b[K";
+const REPOSITION_CURSOR_CMD: &str = "\x1b[H";
+const HIDE_CURSOR_CMD: &str = "\x1b[?25l";
+const SHOW_CURSOR_CMD: &str = "\x1b[?25h";
 
 impl Editor {
     fn draw_rows_str(&self) -> String {
@@ -23,28 +24,28 @@ impl Editor {
 
     pub fn clear_screen() {
         let mut stdout = io::stdout().lock();
-        stdout.write_all(CLEAR_SCREEN_CMD).unwrap();
+        stdout.write_all(CLEAR_SCREEN_CMD.as_bytes()).unwrap();
         stdout.flush().unwrap();
     }
 
     pub fn reposition_cursor() {
         let mut stdout = io::stdout().lock();
-        stdout.write_all(REPOSITION_CURSOR_CMD).unwrap();
+        stdout.write_all(REPOSITION_CURSOR_CMD.as_bytes()).unwrap();
         stdout.flush().unwrap();
     }
 
 
     pub fn refresh_screen(&self) {
-        let mut buf: Vec<u8> = vec![];
-        buf.extend_from_slice(HIDE_CURSOR_CMD);
-        buf.extend_from_slice(CLEAR_SCREEN_CMD);
-        buf.extend_from_slice(REPOSITION_CURSOR_CMD);
-        buf.extend_from_slice(self.draw_rows_str().as_bytes());
-        buf.extend_from_slice(REPOSITION_CURSOR_CMD);
-        buf.extend_from_slice(SHOW_CURSOR_CMD);
+        let mut buf  = String::new();
+        buf.push_str(HIDE_CURSOR_CMD);
+        buf.push_str(CLEAR_SCREEN_CMD);
+        buf.push_str(REPOSITION_CURSOR_CMD);
+        buf.push_str(self.draw_rows_str().as_str());
+        buf.push_str(REPOSITION_CURSOR_CMD);
+        buf.push_str(SHOW_CURSOR_CMD);
 
         let mut stdout = io::stdout().lock();
-        stdout.write_all(buf.as_slice()).unwrap();
+        stdout.write_all(buf.as_bytes()).unwrap();
         stdout.flush().unwrap();
     }
 }
