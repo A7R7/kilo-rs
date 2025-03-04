@@ -1,14 +1,16 @@
+mod editor;
 mod terminal;
 mod input;
 mod output;
 
-use anyhow::Result;
+use editor::Editor;
+use anyhow::{Result, Context};
 
 fn main() -> Result<()> {
-    terminal::enable_raw_mode()?;
+    let mut editor = Editor::new().context("Failed to initiate editor")?;
 
     loop {
-        output::refresh_screen();
-        input::process_keypress()?;
+        editor.refresh_screen();
+        editor.process_keypress()?;
     }
 }
