@@ -65,6 +65,7 @@ impl Editor {
                         if seq[2] == b'~' {
                             match seq[1] {
                                 b'1' => return Ok(HOME_KEY),
+                                b'3' => return Ok(DEL_KEY),
                                 b'4' => return Ok(END_KEY),
                                 b'5' => return Ok(PAGE_UP),
                                 b'6' => return Ok(PAGE_DOWN),
