@@ -13,11 +13,11 @@ impl Editor {
         let mut buf = String::new();
         for y in 0..= (self.screenrows - 1) {
             let file_row = y + self.row_off;
-            if (file_row as usize) < self.rows.len() {
-                let row_str = self.rows[file_row as usize].chars.as_str();
-                if row_str.len() > self.col_off as usize {
-                    let len = row_str.len() - self.col_off as usize;
-                    buf.push_str(&row_str[self.col_off as usize..(self.col_off as usize + len)]);
+            if file_row < self.rows.len() {
+                let row_str = self.rows[file_row].chars.as_str();
+                if row_str.len() > self.col_off {
+                    let len = row_str.len() - self.col_off;
+                    buf.push_str(&row_str[self.col_off..(self.col_off + len)]);
                 }
             } else {
                 buf.push_str("~");

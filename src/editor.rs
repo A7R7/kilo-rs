@@ -7,12 +7,12 @@ pub struct EditorRow {
 }
 
 pub struct Editor {
-    pub cx: i32,
-    pub cy: i32,
-    pub row_off: i32,
-    pub col_off: i32,
-    pub screenrows: i32,
-    pub screencols: i32,
+    pub cx: usize,
+    pub cy: usize,
+    pub row_off: usize,
+    pub col_off: usize,
+    pub screenrows: usize,
+    pub screencols: usize,
     pub rows: Vec<EditorRow>,
     pub ori_termios: Termios,
     pub termios: Termios,

@@ -95,7 +95,7 @@ impl Editor {
         Ok(buffer[0] as i32)
     }
 
-    fn get_cursor_position() -> Result<(i32, i32)> {
+    fn get_cursor_position() -> Result<(usize, usize)> {
         let mut stdout = io::stdout().lock();
         stdout.write_all(b"\x1b[6n\r\n")?;
         stdout.flush()?;
@@ -103,8 +103,8 @@ impl Editor {
         let mut buf = String::new();
         let _ = io::stdin().lock().read_to_string(&mut buf);
 
-        let mut x: i32 = 0;
-        let mut y: i32 = 0;
+        let mut x: usize = 0;
+        let mut y: usize = 0;
         if let Some(buf) = buf.strip_prefix("\x1b[") {
             if let Some(buf) = buf.strip_suffix("R") {
                 let parts: Vec<&str> = buf.split(';').collect();
@@ -117,7 +117,7 @@ impl Editor {
         Ok((x, y))
     }
 
-    pub fn get_window_size() -> Result<(i32, i32)> {
+    pub fn get_window_size() -> Result<(usize, usize)> {
         let mut stdout = io::stdout().lock();
         stdout.write_all(b"\x1b[999C\x1b[999B")?;
         stdout.flush()?;

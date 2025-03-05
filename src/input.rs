@@ -26,7 +26,7 @@ impl Editor {
                 }
             }
             ARROW_DOWN => {
-                if self.cy < self.rows.len() as i32 - 1 {
+                if self.cy < self.rows.len() - 1 {
                     self.cy += 1;
                 }
             }
@@ -41,10 +41,10 @@ impl Editor {
             _ => {}
         }
 
-        if (self.cy as usize) < self.rows.len() {
-            let line = &self.rows[self.cy as usize].chars;
-            if (self.cx as usize) > line.len() {
-                self.cx = line.len() as i32;
+        if self.cy < self.rows.len() {
+            let line = &self.rows[self.cy].chars;
+            if self.cx > line.len() {
+                self.cx = line.len();
             }
         }
     }
