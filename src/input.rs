@@ -54,6 +54,13 @@ impl Editor {
             ARROW_UP | ARROW_DOWN | ARROW_LEFT | ARROW_RIGHT => {
                 self.move_cursor(key);
             }
+            PAGE_UP | PAGE_DOWN => {
+                for _ in 1..= (self.screenrows - 1) {
+                    self.move_cursor(
+                        if key == PAGE_UP { ARROW_UP } else { ARROW_DOWN }
+                    );
+                }
+            }
             _ => {},
         };
         Ok(())

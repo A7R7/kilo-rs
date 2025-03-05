@@ -58,11 +58,23 @@ impl Editor {
             }
             if seq[0] == b'[' {
                 match seq[1] {
+                    x if b'0' < x && x < b'9' => {
+                        if stdin.read_exact(&mut seq[2..3]).is_err() {
+                            return Ok(b'\x1b' as i32)
+                        }
+                        if seq[2] == b'~' {
+                            match seq[1] {
+                                b'5' => return Ok(PAGE_UP),
+                                b'6' => return Ok(PAGE_DOWN),
+                                _ => {}
+                            }
+                        }
+                    }
                     b'A' => return Ok(ARROW_UP),
                     b'B' => return Ok(ARROW_DOWN),
                     b'C' => return Ok(ARROW_RIGHT),
                     b'D' => return Ok(ARROW_LEFT),
-                    _ => return Ok(b'\x1b' as i32)
+                    _ => {}
                 }
             }
             return Ok(b'\x1b' as i32)
