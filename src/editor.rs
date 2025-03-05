@@ -1,11 +1,17 @@
 use nix::sys::termios::Termios;
 use anyhow::{Result, Context};
 
+pub struct EditorRow {
+    pub chars: String,
+    pub render: String
+}
+
 pub struct Editor {
     pub cx: i32,
     pub cy: i32,
     pub screenrows: i32,
     pub screencols: i32,
+    pub rows: Vec<EditorRow>,
     pub ori_termios: Termios,
     pub termios: Termios,
 }
@@ -21,6 +27,7 @@ impl Editor {
             cy: 0,
             screenrows,
             screencols,
+            rows: Vec::new(),
             ori_termios,
             termios
         })

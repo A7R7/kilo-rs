@@ -10,15 +10,26 @@ const SHOW_CURSOR_CMD: &str = "\x1b[?25h";
 
 impl Editor {
     fn draw_rows_str(&self) -> String {
-        let mut str = String::new();
-        for _ in 1..= (self.screenrows - 1) {
-            str.push_str("~");
-            str.push_str(CLEAR_LINE_CMD);
-            str.push_str("\r\n")
+        let mut buf = String::new();
+        for y in 0..= (self.screenrows - 1) {
+            if (y as usize) < self.rows.len() {
+                let row_str = self.rows[y as usize].chars.as_str();
+                let len = if row_str.len() > self.screencols as usize {
+                    self.screencols as usize
+                } else {
+                    row_str.len()
+                };
+                buf.push_str(&row_str[0..len]);
+            } else {
+                buf.push_str("~");
+            }
+
+            buf.push_str(CLEAR_LINE_CMD);
+            if y < self.screenrows - 1 {
+                buf.push_str("\r\n")
+            }
         }
-        str.push_str("~");
-        str.push_str(CLEAR_LINE_CMD);
-        str
+        buf
     }
 
     pub fn move_cursor_str(&self) -> String {
