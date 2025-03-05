@@ -61,6 +61,12 @@ impl Editor {
                     );
                 }
             }
+            HOME_KEY => {
+                self.cx = 0;
+            }
+            END_KEY => {
+                self.cx = self.screencols - 1;
+            }
             _ => {},
         };
         Ok(())

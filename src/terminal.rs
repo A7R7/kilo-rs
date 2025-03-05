@@ -64,8 +64,12 @@ impl Editor {
                         }
                         if seq[2] == b'~' {
                             match seq[1] {
+                                b'1' => return Ok(HOME_KEY),
+                                b'4' => return Ok(END_KEY),
                                 b'5' => return Ok(PAGE_UP),
                                 b'6' => return Ok(PAGE_DOWN),
+                                b'7' => return Ok(HOME_KEY),
+                                b'8' => return Ok(END_KEY),
                                 _ => {}
                             }
                         }
@@ -74,6 +78,14 @@ impl Editor {
                     b'B' => return Ok(ARROW_DOWN),
                     b'C' => return Ok(ARROW_RIGHT),
                     b'D' => return Ok(ARROW_LEFT),
+                    b'H' => return Ok(HOME_KEY),
+                    b'F' => return Ok(END_KEY),
+                    _ => {}
+                }
+            } else if seq[0] == b'O' {
+                match seq[1] {
+                    b'H' => return Ok(HOME_KEY),
+                    b'F' => return Ok(END_KEY),
                     _ => {}
                 }
             }
