@@ -40,6 +40,13 @@ impl Editor {
             }
             _ => {}
         }
+
+        if (self.cy as usize) < self.rows.len() {
+            let line = &self.rows[self.cy as usize].chars;
+            if (self.cx as usize) > line.len() {
+                self.cx = line.len() as i32;
+            }
+        }
     }
 
     pub fn process_keypress(&mut self) -> Result<()> {
