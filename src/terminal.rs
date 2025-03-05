@@ -1,4 +1,5 @@
 use crate::editor::Editor;
+use crate::input::*;
 
 use std::io::{self, Read, Write};
 use std::os::unix::io::AsFd;
@@ -39,15 +40,34 @@ impl Editor {
         Ok((ori_termios, termios))
     }
 
-    pub fn read_key(&self) -> Result<u8> {
+    pub fn read_key(&self) -> Result<i32> {
+        let mut stdin = io::stdin().lock();
         let mut buffer = [0u8; 1];
         loop {
-            match io::stdin().read(&mut buffer) {
-                Ok(_) => return Ok(buffer[0]),
+            match stdin.read(&mut buffer) {
+                Ok(_) => break,
                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => continue,
                 Err(e) => return Err(e).context("Failed to read key from stdin"),
             }
         }
+        if buffer[0] == b'\x1b' {
+            let mut seq = [0u8; 3];
+            if stdin.read_exact(&mut seq[0..1]).is_err() ||
+               stdin.read_exact(&mut seq[1..2]).is_err() {
+                   return Ok(b'\x1b' as i32);
+            }
+            if seq[0] == b'[' {
+                match seq[1] {
+                    b'A' => return Ok(ARROW_UP),
+                    b'B' => return Ok(ARROW_DOWN),
+                    b'C' => return Ok(ARROW_RIGHT),
+                    b'D' => return Ok(ARROW_LEFT),
+                    _ => return Ok(b'\x1b' as i32)
+                }
+            }
+            return Ok(b'\x1b' as i32)
+        }
+        Ok(buffer[0] as i32)
     }
 
     fn get_cursor_position() -> Result<(i32, i32)> {
@@ -56,7 +76,7 @@ impl Editor {
         stdout.flush()?;
 
         let mut buf = String::new();
-        let _ = io::stdin().read_to_string(&mut buf);
+        let _ = io::stdin().lock().read_to_string(&mut buf);
 
         let mut x: i32 = 0;
         let mut y: i32 = 0;

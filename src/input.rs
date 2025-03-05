@@ -4,16 +4,42 @@ use std::process::exit;
 use anyhow::{Result, Context};
 
 macro_rules! ctrl_key {
-    ($k:expr) => {($k as u8 & 0x1f) as u8};
+    ($k:expr) => {($k as u8 & 0x1f) as i32};
 }
 
+pub const ARROW_LEFT: i32 = 1000;
+pub const ARROW_RIGHT: i32 = 1001;
+pub const ARROW_UP: i32 = 1002;
+pub const ARROW_DOWN: i32 = 1003;
+pub const DEL_KEY: i32 = 1004;
+pub const HOME_KEY: i32 = 1005;
+pub const END_KEY: i32 = 1006;
+pub const PAGE_UP: i32 = 1007;
+pub const PAGE_DOWN: i32 = 1008;
+
 impl Editor {
-    pub fn move_cursor(&mut self, key: char) {
+    pub fn move_cursor(&mut self, key: i32) {
         match key {
-            'w' => self.cy -= 1,
-            'a' => self.cx -= 1,
-            's' => self.cy += 1,
-            'd' => self.cx += 1,
+            ARROW_UP => {
+                if self.cy > 0 {
+                    self.cy -= 1;
+                }
+            }
+            ARROW_DOWN => {
+                if self.cy < self.screenrows - 1 {
+                    self.cy += 1;
+                }
+            }
+            ARROW_LEFT => {
+                if self.cx > 0 {
+                    self.cx -= 1;
+                }
+            }
+            ARROW_RIGHT => {
+                if self.cx < self.screencols - 1 {
+                    self.cx += 1;
+                }
+            }
             _ => {}
         }
     }
@@ -25,8 +51,8 @@ impl Editor {
                 Self::clear_screen();
                 exit(0);
             }
-            b'w' | b'a' | b's' | b'd' => {
-                self.move_cursor(key as char);
+            ARROW_UP | ARROW_DOWN | ARROW_LEFT | ARROW_RIGHT => {
+                self.move_cursor(key);
             }
             _ => {},
         };
