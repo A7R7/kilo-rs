@@ -15,12 +15,10 @@ impl Editor {
             let file_row = y + self.row_off;
             if (file_row as usize) < self.rows.len() {
                 let row_str = self.rows[file_row as usize].chars.as_str();
-                let len = if row_str.len() > self.screencols as usize {
-                    self.screencols as usize
-                } else {
-                    row_str.len()
-                };
-                buf.push_str(&row_str[0..len]);
+                if row_str.len() > self.col_off as usize {
+                    let len = row_str.len() - self.col_off as usize;
+                    buf.push_str(&row_str[self.col_off as usize..(self.col_off as usize + len)]);
+                }
             } else {
                 buf.push_str("~");
             }
@@ -34,7 +32,7 @@ impl Editor {
     }
 
     pub fn move_cursor_str(&self) -> String {
-        format!("\x1b[{};{}H", self.cy - self.row_off + 1 , self.cx + 1)
+        format!("\x1b[{};{}H", self.cy - self.row_off + 1 , self.cx - self.col_off + 1)
     }
 
     pub fn clear_screen() {
@@ -55,6 +53,12 @@ impl Editor {
         }
         if self.cy >= self.row_off + self.screenrows {
             self.row_off = self.cy - self.screenrows + 1;
+        }
+        if self.cx < self.col_off {
+            self.col_off = self.cx;
+        }
+        if self.cx >= self.col_off + self.screencols{
+            self.col_off = self.cx - self.screencols + 1;
         }
     }
 

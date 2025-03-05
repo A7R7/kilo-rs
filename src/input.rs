@@ -36,9 +36,7 @@ impl Editor {
                 }
             }
             ARROW_RIGHT => {
-                if self.cx < self.screencols - 1 {
-                    self.cx += 1;
-                }
+                self.cx += 1;
             }
             _ => {}
         }
