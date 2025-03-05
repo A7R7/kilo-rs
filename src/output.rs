@@ -12,8 +12,9 @@ impl Editor {
     fn draw_rows_str(&self) -> String {
         let mut buf = String::new();
         for y in 0..= (self.screenrows - 1) {
-            if (y as usize) < self.rows.len() {
-                let row_str = self.rows[y as usize].chars.as_str();
+            let file_row = y + self.row_off;
+            if (file_row as usize) < self.rows.len() {
+                let row_str = self.rows[file_row as usize].chars.as_str();
                 let len = if row_str.len() > self.screencols as usize {
                     self.screencols as usize
                 } else {
@@ -33,7 +34,7 @@ impl Editor {
     }
 
     pub fn move_cursor_str(&self) -> String {
-        format!("\x1b[{};{}H", self.cy + 1, self.cx + 1)
+        format!("\x1b[{};{}H", self.cy - self.row_off + 1 , self.cx + 1)
     }
 
     pub fn clear_screen() {
@@ -48,8 +49,17 @@ impl Editor {
         stdout.flush().unwrap();
     }
 
+    pub fn scroll(&mut self) {
+        if self.cy < self.row_off {
+            self.row_off = self.cy;
+        }
+        if self.cy >= self.row_off + self.screenrows {
+            self.row_off = self.cy - self.screenrows + 1;
+        }
+    }
 
-    pub fn refresh_screen(&self) {
+    pub fn refresh_screen(&mut self) {
+        self.scroll();
         let mut buf  = String::new();
         buf.push_str(HIDE_CURSOR_CMD);
         buf.push_str(REPOSITION_CURSOR_CMD);

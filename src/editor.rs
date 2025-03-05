@@ -9,6 +9,7 @@ pub struct EditorRow {
 pub struct Editor {
     pub cx: i32,
     pub cy: i32,
+    pub row_off: i32,
     pub screenrows: i32,
     pub screencols: i32,
     pub rows: Vec<EditorRow>,
@@ -25,6 +26,7 @@ impl Editor {
         Ok(Self {
             cx: 0,
             cy: 0,
+            row_off: 0,
             screenrows,
             screencols,
             rows: Vec::new(),

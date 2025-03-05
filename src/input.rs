@@ -26,7 +26,7 @@ impl Editor {
                 }
             }
             ARROW_DOWN => {
-                if self.cy < self.screenrows - 1 {
+                if self.cy < self.rows.len() as i32 - 1 {
                     self.cy += 1;
                 }
             }
