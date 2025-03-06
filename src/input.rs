@@ -68,6 +68,14 @@ impl Editor {
                 self.move_cursor(key);
             }
             PAGE_UP | PAGE_DOWN => {
+                if key == PAGE_UP {
+                    self.cy = self.row_off;
+                } else if key == PAGE_DOWN {
+                    self.cy = self.row_off + self.screenrows - 1;
+                    if self.cy > self.rows.len() {
+                        self.cy = self.rows.len();
+                    }
+                }
                 for _ in 1..= (self.screenrows - 1) {
                     self.move_cursor(
                         if key == PAGE_UP { ARROW_UP } else { ARROW_DOWN }
@@ -78,7 +86,9 @@ impl Editor {
                 self.cx = 0;
             }
             END_KEY => {
-                self.cx = self.screencols - 1;
+                if self.cy < self.rows.len() {
+                    self.cx = self.rows[self.cy].chars.len() - 1;
+                }
             }
             _ => {},
         };
