@@ -33,10 +33,18 @@ impl Editor {
             ARROW_LEFT => {
                 if self.cx > 0 {
                     self.cx -= 1;
+                } else if self.cy > 0{
+                    self.cy -= 1;
+                    self.cx = self.rows[self.cy].chars.len();
                 }
             }
             ARROW_RIGHT => {
-                self.cx += 1;
+                if self.cx < self.rows[self.cy].chars.len() {
+                    self.cx += 1;
+                } else if self.cy < self.rows.len(){
+                    self.cy += 1;
+                    self.cx = 0;
+                }
             }
             _ => {}
         }
