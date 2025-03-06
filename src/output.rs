@@ -14,7 +14,7 @@ impl Editor {
         for y in 0..= (self.screenrows - 1) {
             let file_row = y + self.row_off;
             if file_row < self.rows.len() {
-                let row_str = self.rows[file_row].chars.as_str();
+                let row_str = self.rows[file_row].render.as_str();
                 if row_str.len() > self.col_off {
                     let len = row_str.len() - self.col_off;
                     buf.push_str(&row_str[self.col_off..(self.col_off + len)]);

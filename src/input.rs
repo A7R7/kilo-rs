@@ -41,7 +41,7 @@ impl Editor {
             ARROW_RIGHT => {
                 if self.cx < self.rows[self.cy].chars.len() {
                     self.cx += 1;
-                } else if self.cy < self.rows.len(){
+                } else if self.cy < self.rows.len() - 1{
                     self.cy += 1;
                     self.cx = 0;
                 }
