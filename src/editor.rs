@@ -9,6 +9,7 @@ pub struct EditorRow {
 pub struct Editor {
     pub cx: usize,
     pub cy: usize,
+    pub rx: usize,
     pub row_off: usize,
     pub col_off: usize,
     pub screenrows: usize,
@@ -27,6 +28,7 @@ impl Editor {
         Ok(Self {
             cx: 0,
             cy: 0,
+            rx: 0,
             row_off: 0,
             col_off: 0,
             screenrows,

@@ -32,7 +32,7 @@ impl Editor {
     }
 
     pub fn move_cursor_str(&self) -> String {
-        format!("\x1b[{};{}H", self.cy - self.row_off + 1 , self.cx - self.col_off + 1)
+        format!("\x1b[{};{}H", self.cy - self.row_off + 1 , self.rx - self.col_off + 1)
     }
 
     pub fn clear_screen() {
@@ -48,17 +48,22 @@ impl Editor {
     }
 
     pub fn scroll(&mut self) {
+        self.rx = 0;
+        if self.cy < self.rows.len() {
+            self.rx = Self::row_cx_to_rx(self.rows[self.cy].chars.as_str(), self.cx).unwrap();
+        }
+        
         if self.cy < self.row_off {
             self.row_off = self.cy;
         }
         if self.cy >= self.row_off + self.screenrows {
             self.row_off = self.cy - self.screenrows + 1;
         }
-        if self.cx < self.col_off {
-            self.col_off = self.cx;
+        if self.rx < self.col_off {
+            self.col_off = self.rx;
         }
-        if self.cx >= self.col_off + self.screencols{
-            self.col_off = self.cx - self.screencols + 1;
+        if self.rx >= self.col_off + self.screencols{
+            self.col_off = self.rx - self.screencols + 1;
         }
     }
 
