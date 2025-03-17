@@ -15,6 +15,7 @@ impl Editor {
             }
             self.append_row(line);
         }
+        self.file_name = file_name.to_string();
         Ok(())
     }
 }

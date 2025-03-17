@@ -18,6 +18,7 @@ fn main() -> Result<()> {
         editor.open_file(args[1].as_str())?;
     }
 
+    editor.set_status_msg(String::from("HELP: Ctrl-Q = quit"));
 
     loop {
         editor.refresh_screen();

@@ -38,4 +38,13 @@ impl Editor {
             }
         );
     }
+
+    pub fn row_insert_car(row: &mut EditorRow, at: usize, c: char) {
+        if at > row.chars.len() {
+            row.chars.push(c);
+        } else {
+            row.chars.insert(at, c);
+        }
+        row.render = Self::update_row(row.chars.as_str()).unwrap();
+    }
 }
