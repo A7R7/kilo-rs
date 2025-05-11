@@ -39,12 +39,15 @@ impl Editor {
         );
     }
 
-    pub fn row_insert_car(row: &mut EditorRow, at: usize, c: char) {
-        if at > row.chars.len() {
-            row.chars.push(c);
+}
+
+impl EditorRow {
+    pub fn insert_char(&mut self, at: usize, c: char) {
+        if let Some(pos) = self.chars.char_indices().nth(at).map(|(i, _)| i) {
+            self.chars.insert(pos, c);
         } else {
-            row.chars.insert(at, c);
+            self.chars.push(c);
         }
-        row.render = Self::update_row(row.chars.as_str()).unwrap();
+        self.render = Editor::update_row(self.chars.as_str()).unwrap();
     }
 }

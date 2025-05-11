@@ -4,6 +4,7 @@ mod input;
 mod output;
 mod file_io;
 mod row_operations;
+mod editor_operations;
 
 use editor::Editor;
 use anyhow::{Result, Context};
