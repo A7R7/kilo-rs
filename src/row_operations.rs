@@ -13,13 +13,13 @@ impl Editor {
         Ok(rx)
     }
 
-    fn update_row(chars: &str) -> Result<String>{
+    pub fn update_row(chars: &str) -> Result<String>{
         let tabs_num = chars.matches('\t').count();
-        let mut render = String::with_capacity(chars.len() + tabs_num * 7 + 1);
+        let mut render = String::with_capacity(chars.chars().count() + tabs_num * 7 + 1);
         for c in chars.chars() {
             if c == '\t' {
                 render.push(' ');
-                while render.len() % 8 != 0 {
+                while render.chars().count() % 8 != 0 {
                     render.push(' ');
                 }
             } else {

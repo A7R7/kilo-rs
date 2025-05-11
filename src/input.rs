@@ -35,11 +35,11 @@ impl Editor {
                     self.cx -= 1;
                 } else if self.cy > 0{
                     self.cy -= 1;
-                    self.cx = self.rows[self.cy].chars.len();
+                    self.cx = self.rows[self.cy].chars.chars().count();
                 }
             }
             ARROW_RIGHT => {
-                if self.cx < self.rows[self.cy].chars.len() {
+                if self.cx < self.rows[self.cy].chars.chars().count() {
                     self.cx += 1;
                 } else if self.cy < self.rows.len() - 1{
                     self.cy += 1;
@@ -51,8 +51,8 @@ impl Editor {
 
         if self.cy < self.rows.len() {
             let line = &self.rows[self.cy].chars;
-            if self.cx > line.len() {
-                self.cx = line.len();
+            if self.cx > line.chars().count() {
+                self.cx = line.chars().count();
             }
         }
     }
@@ -60,6 +60,9 @@ impl Editor {
     pub fn process_keypress(&mut self) -> Result<()> {
         let key = self.read_key()?;
         match key {
+            0 => {
+                // nothing
+            }
             c if c == ctrl_key!('q') => {
                 Self::clear_screen();
                 exit(0);
@@ -87,10 +90,17 @@ impl Editor {
             }
             END_KEY => {
                 if self.cy < self.rows.len() {
-                    self.cx = self.rows[self.cy].chars.len() - 1;
+                    self.cx = self.rows[self.cy].chars.chars().count() - 1;
                 }
             }
-            _ => {},
+            _ => {
+                if let Some(c) = char::from_u32(key as u32) {
+                    if c.is_ascii() {
+                        self.insert_char(c);
+                    }
+                }
+            },
+            _ => {}
         };
         Ok(())
     }

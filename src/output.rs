@@ -18,8 +18,8 @@ impl Editor {
             let file_row = y + self.row_off;
             if file_row < self.rows.len() {
                 let row_str = self.rows[file_row].render.as_str();
-                if row_str.len() > self.col_off {
-                    let len = row_str.len() - self.col_off;
+                if row_str.chars().count() > self.col_off {
+                    let len = row_str.chars().count() - self.col_off;
                     buf.push_str(&row_str[self.col_off..(self.col_off + len)]);
                 }
             } else {
