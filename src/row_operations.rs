@@ -39,6 +39,12 @@ impl Editor {
         );
     }
 
+    pub fn del_row(&mut self, at: usize) {
+        if at > self.rows.len() { return }
+        self.rows.remove(at);
+    }
+
+
 }
 
 impl EditorRow {
@@ -58,5 +64,10 @@ impl EditorRow {
             self.chars.replace_range(start..end, "");
         }
         self.render = Editor::update_row(self.chars.as_str()).unwrap();
+    }
+
+    pub fn append_string(&mut self, str: &str) {
+        self.chars.push_str(str);
+        self.render = Editor::update_row(self.chars.as_str()).unwrap();        
     }
 }
