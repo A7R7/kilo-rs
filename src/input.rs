@@ -7,6 +7,11 @@ macro_rules! ctrl_key {
     ($k:expr) => {($k as u8 & 0x1f) as i32};
 }
 
+const fn ctrl_key(c: char) -> i32 {
+    (c as u8 & 0x1f) as i32
+}
+
+pub const BACKSPACE: i32 = 127;
 pub const ARROW_LEFT: i32 = 1000;
 pub const ARROW_RIGHT: i32 = 1001;
 pub const ARROW_UP: i32 = 1002;
@@ -16,6 +21,10 @@ pub const HOME_KEY: i32 = 1005;
 pub const END_KEY: i32 = 1006;
 pub const PAGE_UP: i32 = 1007;
 pub const PAGE_DOWN: i32 = 1008;
+
+pub const CTRL_Q: i32 = ctrl_key('q');
+pub const CTRL_S: i32 = ctrl_key('s');
+pub const CTRL_H: i32 = ctrl_key('h');
 
 impl Editor {
     pub fn move_cursor(&mut self, key: i32) {
@@ -63,9 +72,12 @@ impl Editor {
             0 => {
                 // nothing
             }
-            c if c == ctrl_key!('q') => {
+            CTRL_Q => {
                 Self::clear_screen();
                 exit(0);
+            }
+            CTRL_S => {
+                return self.save_file();
             }
             ARROW_UP | ARROW_DOWN | ARROW_LEFT | ARROW_RIGHT => {
                 self.move_cursor(key);
@@ -93,14 +105,14 @@ impl Editor {
                     self.cx = self.rows[self.cy].chars.chars().count() - 1;
                 }
             }
+            BACKSPACE | CTRL_H | DEL_KEY => {
+                self.del_char();
+            }
             _ => {
                 if let Some(c) = char::from_u32(key as u32) {
-                    if c.is_ascii() {
-                        self.insert_char(c);
-                    }
+                    self.insert_char(c);    
                 }
-            },
-            _ => {}
+            }
         };
         Ok(())
     }

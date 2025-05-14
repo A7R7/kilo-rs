@@ -50,4 +50,13 @@ impl EditorRow {
         }
         self.render = Editor::update_row(self.chars.as_str()).unwrap();
     }
+
+    pub fn del_char(&mut self, at: usize) {
+        if at > self.chars.chars().count() { return }
+        if let Some((start, c)) = self.chars.char_indices().nth(at) {
+            let end = start + c.len_utf8();
+            self.chars.replace_range(start..end, "");
+        }
+        self.render = Editor::update_row(self.chars.as_str()).unwrap();
+    }
 }
