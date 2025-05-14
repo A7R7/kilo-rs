@@ -1,8 +1,8 @@
 use crate::editor::Editor;
 
 use std::fs::File;
-use std::io::{self, BufRead};
-use anyhow::{Context, Result};
+use std::io::{self, BufRead, Write};
+use anyhow::{anyhow, Context, Result};
 
 impl Editor {
     pub fn open_file(&mut self, file_name: &str) -> Result<()>  {
@@ -16,6 +16,26 @@ impl Editor {
             self.append_row(line);
         }
         self.file_name = file_name.to_string();
+        Ok(())
+    }
+
+    pub fn rows_to_string(&self) -> String {
+        let mut buf = String::new();
+        for row in &self.rows {
+            buf.push_str(row.chars.as_str());
+            buf.push_str("\n");
+        }        
+        buf
+    }
+
+    pub fn save_file(&mut self) -> Result<()>{
+        if self.file_name.is_empty() {
+            return Err(anyhow!("Empty file name"));
+        }
+        let buf = self.rows_to_string();
+        let mut file = File::open(self.file_name.as_str()).context("Failed to open file")?;
+        file.write_all(buf.as_bytes())?;
+        self.set_status_msg(format!("{} bytes written to disk", buf.len()));
         Ok(())
     }
 }

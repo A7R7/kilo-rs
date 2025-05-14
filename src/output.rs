@@ -35,7 +35,8 @@ impl Editor {
     fn draw_status_bar(&self) -> String {
         let mut bar = String::new();
         bar.push_str(INVERT_COLOR_CMD);
-        let status_left = format!(" {:.20} - {} lines ", self.file_name, self.rows.len());
+        let status_left = format!(" {:.20} - {} lines{}", 
+            self.file_name, self.rows.len(), if self.dirty {" modified"} else {""});
         let status_right = format!(" {}:{} ", self.cy, self.cx);
         let space_len = self.screencols - status_left.len() - status_right.len() - 2;
         let space_len = if space_len > 0 { space_len } else { 0 };

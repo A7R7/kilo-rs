@@ -16,6 +16,7 @@ pub struct Editor {
     pub screenrows: usize,
     pub screencols: usize,
     pub rows: Vec<EditorRow>,
+    pub dirty: bool,
     pub file_name: String,
     pub status_msg: String,
     pub status_msg_time: SystemTime,
@@ -38,6 +39,7 @@ impl Editor {
             screenrows: screenrows - 2, // leave 2 line for status and msg bar
             screencols,
             rows: Vec::new(),
+            dirty: false,
             file_name: String::new(),
             status_msg: String::new(),
             status_msg_time: UNIX_EPOCH,

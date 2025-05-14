@@ -8,5 +8,6 @@ impl Editor {
         }
         self.rows[self.cy].insert_char(self.cx, c);
         self.cx += 1;
+        self.dirty = true;
     }
 }
