@@ -1,6 +1,6 @@
 use crate::editor::Editor;
 
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::{self, BufRead, Write};
 use anyhow::{anyhow, Context, Result};
 
@@ -33,8 +33,12 @@ impl Editor {
             return Err(anyhow!("Empty file name"));
         }
         let buf = self.rows_to_string();
-        let mut file = File::open(self.file_name.as_str()).context("Failed to open file")?;
-        file.write_all(buf.as_bytes())?;
+        let mut file = OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(self.file_name.as_str())
+            .context("Failed to open file for writing")?;
+        file.write_all(buf.as_bytes()).context("Failed to write to file")?;
         self.set_status_msg(format!("{} bytes written to disk", buf.len()));
         Ok(())
     }
