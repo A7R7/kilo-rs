@@ -26,6 +26,8 @@ pub const CTRL_Q: i32 = ctrl_key('q');
 pub const CTRL_S: i32 = ctrl_key('s');
 pub const CTRL_H: i32 = ctrl_key('h');
 
+pub const NEWLINE: i32 = '\r' as i32;
+
 impl Editor {
     pub fn move_cursor(&mut self, key: i32) {
         match key {
@@ -104,6 +106,9 @@ impl Editor {
                 if self.cy < self.rows.len() {
                     self.cx = self.rows[self.cy].chars.chars().count() - 1;
                 }
+            }
+            NEWLINE => {
+                self.insert_newline();
             }
             BACKSPACE | CTRL_H | DEL_KEY => {
                 self.del_char();
