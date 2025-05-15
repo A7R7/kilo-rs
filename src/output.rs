@@ -1,7 +1,7 @@
 use crate::editor::Editor;
+use anyhow::{Context, Result};
 use std::io::{self, Write};
 use std::time::{SystemTime, UNIX_EPOCH};
-use anyhow::{Context, Result};
 
 const CLEAR_SCREEN_CMD: &str = "\x1b[2J";
 const CLEAR_LINE_CMD: &str = "\x1b[K";
@@ -14,7 +14,7 @@ const NORMAL_COLOR_CMD: &str = "\x1b[m";
 impl Editor {
     fn draw_rows_str(&self) -> String {
         let mut buf = String::new();
-        for y in 0..= (self.screenrows - 1) {
+        for y in 0..=(self.screenrows - 1) {
             let file_row = y + self.row_off;
             if file_row < self.rows.len() {
                 let row_str = self.rows[file_row].render.as_str();
@@ -42,8 +42,12 @@ impl Editor {
     fn draw_status_bar(&self) -> String {
         let mut bar = String::new();
         bar.push_str(INVERT_COLOR_CMD);
-        let status_left = format!(" {:.20} - {} lines{}", 
-            self.file_name, self.rows.len(), if self.dirty {" modified"} else {""});
+        let status_left = format!(
+            " {:.20} - {} lines{}",
+            self.file_name,
+            self.rows.len(),
+            if self.dirty { " modified" } else { "" }
+        );
         let status_right = format!(" {}:{} ", self.cy, self.cx);
         let space_len = self.screencols - status_left.len() - status_right.len() - 2;
         let space_len = if space_len > 0 { space_len } else { 0 };
@@ -56,7 +60,11 @@ impl Editor {
     }
 
     pub fn move_cursor_str(&self) -> String {
-        format!("\x1b[{};{}H", self.cy - self.row_off + 1 , self.rx - self.col_off + 1)
+        format!(
+            "\x1b[{};{}H",
+            self.cy - self.row_off + 1,
+            self.rx - self.col_off + 1
+        )
     }
 
     pub fn clear_screen() {
@@ -86,7 +94,7 @@ impl Editor {
         if self.rx < self.col_off {
             self.col_off = self.rx;
         }
-        if self.rx >= self.col_off + self.screencols{
+        if self.rx >= self.col_off + self.screencols {
             self.col_off = self.rx - self.screencols + 1;
         }
     }
@@ -96,18 +104,23 @@ impl Editor {
         self.status_msg_time = SystemTime::now();
     }
 
-    pub fn draw_msg_bar_str(&self) -> String{
+    pub fn draw_msg_bar_str(&self) -> String {
         let mut buf = String::new();
         buf.push_str(CLEAR_LINE_CMD);
-        if SystemTime::now().duration_since(self.status_msg_time).unwrap().as_secs() < 5 {
+        if SystemTime::now()
+            .duration_since(self.status_msg_time)
+            .unwrap()
+            .as_secs()
+            < 5
+        {
             buf.push_str(self.status_msg.as_str());
         }
         buf
     }
 
-    pub fn refresh_screen(&mut self) {
+    pub fn refresh_screen(&mut self) -> Result<()> {
         self.scroll();
-        let mut buf  = String::new();
+        let mut buf = String::new();
         buf.push_str(HIDE_CURSOR_CMD);
         buf.push_str(REPOSITION_CURSOR_CMD);
         buf.push_str(self.draw_rows_str().as_str());
@@ -117,7 +130,10 @@ impl Editor {
         buf.push_str(SHOW_CURSOR_CMD);
 
         let mut stdout = io::stdout().lock();
-        stdout.write_all(buf.as_bytes()).unwrap();
-        stdout.flush().unwrap();
+        stdout
+            .write_all(buf.as_bytes())
+            .context("Failed to write to stdout")?;
+        stdout.flush().context("Failed to flush")?;
+        Ok(())
     }
 }
