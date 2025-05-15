@@ -24,12 +24,10 @@ impl Editor {
 
 impl EditorRow {
     pub fn new(chars: &str) -> Self {
-        let mut row = Self {
+        Self {
             chars: chars.to_string(),
-            render: String::new(),
-        };
-        row.update_render();
-        row
+            render: Self::render_from_chars(chars),
+        }
     }
 
     pub fn insert_char(&mut self, at: usize, c: char) {
@@ -56,17 +54,23 @@ impl EditorRow {
     }
 
     pub fn update_render(&mut self) {
-        let tabs_num = self.chars.matches('\t').count();
-        self.render = String::with_capacity(self.chars.chars().count() + tabs_num * 7 + 1);
-        for c in self.chars.chars() {
+        self.render = Self::render_from_chars(&self.chars);
+    }
+
+    fn render_from_chars(chars: &str) -> String {
+        let tabs_num = chars.matches('\t').count();
+        let mut render = String::with_capacity(chars.chars().count() + tabs_num * 7 + 1);
+        for c in chars.chars() {
             if c == '\t' {
-                self.render.push(' ');
-                while self.render.chars().count() % 8 != 0 {
-                    self.render.push(' ');
+                render.push(' ');
+                while render.chars().count() % 8 != 0 {
+                    render.push(' ');
                 }
             } else {
-                self.render.push(c);
+                render.push(c);
             }
         }
+        render
     }
+
 }
