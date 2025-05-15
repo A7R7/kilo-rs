@@ -19,8 +19,15 @@ impl Editor {
             if file_row < self.rows.len() {
                 let row_str = self.rows[file_row].render.as_str();
                 if row_str.chars().count() > self.col_off {
-                    let len = row_str.chars().count() - self.col_off;
-                    buf.push_str(&row_str[self.col_off..(self.col_off + len)]);
+                    let (start, _) = row_str.char_indices().nth(self.col_off).unwrap();
+                    let end = if let Some((idx, _)) =
+                        row_str.char_indices().nth(self.col_off + self.screencols)
+                    {
+                        idx
+                    } else {
+                        row_str.len()
+                    };
+                    buf.push_str(&row_str[start..end]);
                 }
             } else {
                 buf.push_str("~");
