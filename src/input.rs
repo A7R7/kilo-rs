@@ -104,7 +104,7 @@ impl Editor {
             }
             END_KEY => {
                 if self.cy < self.rows.len() {
-                    self.cx = self.rows[self.cy].chars.chars().count() - 1;
+                    self.cx = self.rows[self.cy].chars.chars().count();
                 }
             }
             NEWLINE => {
