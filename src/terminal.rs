@@ -40,6 +40,12 @@ impl Editor {
         Ok((ori_termios, termios))
     }
 
+    pub fn disable_raw_mode(&self) {
+        let stdin = io::stdin();
+        let fd = stdin.as_fd();
+        let _ = tcsetattr(fd, SetArg::TCSAFLUSH, &self.ori_termios).context("Failed to set terminal attributes");
+    }
+
     pub fn read_key(&self) -> Result<i32> {
         let mut stdin = io::stdin().lock();
         let mut buffer = [0u8; 1];

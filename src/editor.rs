@@ -48,3 +48,10 @@ impl Editor {
         })
     }
 }
+
+impl Drop for Editor {
+    fn drop(&mut self) {
+        self.disable_raw_mode();
+    }
+}
+

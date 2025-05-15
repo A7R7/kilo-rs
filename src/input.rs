@@ -76,6 +76,7 @@ impl Editor {
             }
             CTRL_Q => {
                 Self::clear_screen();
+                self.disable_raw_mode();
                 exit(0);
             }
             CTRL_S => {
