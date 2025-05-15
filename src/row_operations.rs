@@ -29,14 +29,12 @@ impl Editor {
         Ok(render)
     }
 
-    pub fn append_row(&mut self, chars: String) {
-        let render = Self::update_row(chars.as_str()).unwrap();
-        self.rows.push(
-            EditorRow {
-                chars,
-                render
-            }
-        );
+    pub fn append_row(&mut self, chars: &str) {
+        self.rows.push(EditorRow::new(chars));
+    }
+
+    pub fn insert_row(&mut self, at: usize, chars: &str) {
+        self.rows.insert(at, EditorRow::new(chars));
     }
 
     pub fn del_row(&mut self, at: usize) {
@@ -48,13 +46,22 @@ impl Editor {
 }
 
 impl EditorRow {
+    pub fn new(chars: &str) -> Self {
+        let mut row = Self {
+            chars: chars.to_string(),
+            render: String::new(),
+        };
+        row.update_render();
+        row
+    }
+
     pub fn insert_char(&mut self, at: usize, c: char) {
         if let Some(pos) = self.chars.char_indices().nth(at).map(|(i, _)| i) {
             self.chars.insert(pos, c);
         } else {
             self.chars.push(c);
         }
-        self.render = Editor::update_row(self.chars.as_str()).unwrap();
+        self.update_render();
     }
 
     pub fn del_char(&mut self, at: usize) {
@@ -63,11 +70,26 @@ impl EditorRow {
             let end = start + c.len_utf8();
             self.chars.replace_range(start..end, "");
         }
-        self.render = Editor::update_row(self.chars.as_str()).unwrap();
+        self.update_render();
     }
 
     pub fn append_string(&mut self, str: &str) {
         self.chars.push_str(str);
-        self.render = Editor::update_row(self.chars.as_str()).unwrap();        
+        self.update_render();
+    }
+
+    pub fn update_render(&mut self) {
+        let tabs_num = self.chars.matches('\t').count();
+        self.render = String::with_capacity(self.chars.chars().count() + tabs_num * 7 + 1);
+        for c in self.chars.chars() {
+            if c == '\t' {
+                self.render.push(' ');
+                while self.render.chars().count() % 8 != 0 {
+                    self.render.push(' ');
+                }
+            } else {
+                self.render.push(c);
+            }
+        }
     }
 }

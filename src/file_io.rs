@@ -13,7 +13,7 @@ impl Editor {
             while line.ends_with(['\n', '\r']) {
                 line.pop();
             }
-            self.append_row(line);
+            self.append_row(line.as_str());
         }
         self.file_name = file_name.to_string();
         Ok(())
