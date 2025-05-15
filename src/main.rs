@@ -16,7 +16,7 @@ fn main() -> Result<()> {
 
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 {
-        editor.open_file(args[1].as_str())?;
+        editor.open_file(&args[1])?;
     }
 
     editor.set_status_msg(String::from("HELP: Ctrl-S = save, Ctrl-Q = quit"));

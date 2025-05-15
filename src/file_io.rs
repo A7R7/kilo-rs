@@ -13,7 +13,7 @@ impl Editor {
             while line.ends_with(['\n', '\r']) {
                 line.pop();
             }
-            self.append_row(line.as_str());
+            self.append_row(&line);
         }
         self.file_name = file_name.to_string();
         Ok(())
@@ -22,7 +22,7 @@ impl Editor {
     pub fn rows_to_string(&self) -> String {
         let mut buf = String::new();
         for row in &self.rows {
-            buf.push_str(row.chars.as_str());
+            buf.push_str(&row.chars);
             buf.push_str("\n");
         }        
         buf
@@ -36,7 +36,7 @@ impl Editor {
         let mut file = OpenOptions::new()
             .write(true)
             .truncate(true)
-            .open(self.file_name.as_str())
+            .open(&self.file_name)
             .context("Failed to open file for writing")?;
         file.write_all(buf.as_bytes()).context("Failed to write to file")?;
         self.set_status_msg(format!("{} bytes written to disk", buf.len()));

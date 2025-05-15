@@ -39,7 +39,7 @@ impl Editor {
         } else {
             self.cx = self.rows[self.cy - 1].chars.chars().count();
             let row = self.rows.remove(self.cy);
-            self.rows[self.cy - 1].append_string(row.chars.as_str());
+            self.rows[self.cy - 1].append_string(&row.chars);
             self.cy -= 1;
         }
         self.dirty = true;

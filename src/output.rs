@@ -17,7 +17,7 @@ impl Editor {
         for y in 0..=(self.screenrows - 1) {
             let file_row = y + self.row_off;
             if file_row < self.rows.len() {
-                let row_str = self.rows[file_row].render.as_str();
+                let row_str = &self.rows[file_row].render;
                 if row_str.chars().count() > self.col_off {
                     let (start, _) = row_str.char_indices().nth(self.col_off).unwrap();
                     let end = if let Some((idx, _)) =
@@ -53,7 +53,7 @@ impl Editor {
         let space_len = if space_len > 0 { space_len } else { 0 };
         let space = " ".repeat(space_len);
         let status = format!("{status_left}{space}{status_right}");
-        bar.push_str(status.as_str());
+        bar.push_str(&status);
         bar.push_str(NORMAL_COLOR_CMD);
         bar.push_str("\r\n");
         bar
@@ -82,7 +82,7 @@ impl Editor {
     pub fn scroll(&mut self) {
         self.rx = 0;
         if self.cy < self.rows.len() {
-            self.rx = Self::row_cx_to_rx(self.rows[self.cy].chars.as_str(), self.cx).unwrap();
+            self.rx = Self::row_cx_to_rx(&self.rows[self.cy].chars, self.cx).unwrap();
         }
 
         if self.cy < self.row_off {
@@ -113,7 +113,7 @@ impl Editor {
             .as_secs()
             < 5
         {
-            buf.push_str(self.status_msg.as_str());
+            buf.push_str(&self.status_msg);
         }
         buf
     }
@@ -123,10 +123,10 @@ impl Editor {
         let mut buf = String::new();
         buf.push_str(HIDE_CURSOR_CMD);
         buf.push_str(REPOSITION_CURSOR_CMD);
-        buf.push_str(self.draw_rows_str().as_str());
-        buf.push_str(self.draw_status_bar().as_str());
-        buf.push_str(self.draw_msg_bar_str().as_str());
-        buf.push_str(self.move_cursor_str().as_str());
+        buf.push_str(&self.draw_rows_str());
+        buf.push_str(&self.draw_status_bar());
+        buf.push_str(&self.draw_msg_bar_str());
+        buf.push_str(&self.move_cursor_str());
         buf.push_str(SHOW_CURSOR_CMD);
 
         let mut stdout = io::stdout().lock();
