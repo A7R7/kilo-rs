@@ -27,6 +27,7 @@ pub const CTRL_S: i32 = ctrl_key('s');
 pub const CTRL_H: i32 = ctrl_key('h');
 
 pub const NEWLINE: i32 = '\r' as i32;
+pub const ESCAPE: i32 = '\x1b' as i32;
 
 impl Editor {
     pub fn move_cursor(&mut self, key: i32) {
@@ -121,5 +122,33 @@ impl Editor {
             }
         };
         Ok(())
+    }
+
+    pub fn prompt(&mut self, prompt: &str) -> Result<Option<String>>{
+        let mut buf = String::new();
+        loop {
+            self.set_status_msg(&format!("{}: {}", prompt, buf));
+            self.refresh_screen()?;
+            let key = self.read_key()?;
+            match key {
+                0 => {}
+                BACKSPACE | CTRL_H | DEL_KEY => {
+                    buf.pop();
+                }
+                ESCAPE => {
+                    self.set_status_msg("");
+                    return Ok(None);
+                }
+                NEWLINE => {
+                    self.set_status_msg("");
+                    return Ok(Some(buf));
+                }
+                _ => {
+                    if let Some(c) = char::from_u32(key as u32) {
+                        buf.push(c);    
+                    }
+                }
+            }
+        }
     }
 }

@@ -30,16 +30,26 @@ impl Editor {
 
     pub fn save_file(&mut self) -> Result<()>{
         if self.file_name.is_empty() {
-            return Err(anyhow!("Empty file name"));
+            if let Some(file_name) = self.prompt("Save as")? {
+                if !file_name.is_empty() {
+                    self.file_name = file_name;
+                } else {
+                    self.set_status_msg("Empty file name");
+                }
+            } else {
+                self.set_status_msg("Save aborted");
+            }
         }
         let buf = self.rows_to_string();
         let mut file = OpenOptions::new()
             .write(true)
+            .create(true)
             .truncate(true)
             .open(&self.file_name)
             .context("Failed to open file for writing")?;
         file.write_all(buf.as_bytes()).context("Failed to write to file")?;
-        self.set_status_msg(format!("{} bytes written to disk", buf.len()));
+        self.set_status_msg(&format!("{} bytes written to disk", buf.len()));
+        self.dirty = false;
         Ok(())
     }
 }

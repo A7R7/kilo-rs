@@ -19,7 +19,7 @@ fn main() -> Result<()> {
         editor.open_file(&args[1])?;
     }
 
-    editor.set_status_msg(String::from("HELP: Ctrl-S = save, Ctrl-Q = quit"));
+    editor.set_status_msg("HELP: Ctrl-S = save, Ctrl-Q = quit");
 
     loop {
         editor.refresh_screen();

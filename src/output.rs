@@ -99,8 +99,8 @@ impl Editor {
         }
     }
 
-    pub fn set_status_msg(&mut self, msg: String) {
-        self.status_msg = msg;
+    pub fn set_status_msg(&mut self, msg: &str) {
+        self.status_msg = msg.to_string();
         self.status_msg_time = SystemTime::now();
     }
 
