@@ -78,3 +78,80 @@ impl<Line> RopeNode<Line> {
         }
     }
 }
+
+
+pub struct RopeLinesIterator<'a, Line> {
+    stack: Vec<&'a RopeNode<Line>>,
+    current_leaf: Option<std::slice::Iter<'a, Line>>,
+}
+
+impl<'a, Line> RopeLinesIterator<'a, Line> {
+    pub fn from_index(root: &'a RopeNode<Line>, mut index: usize) -> Self {
+        let mut stack = Vec::new();
+        let mut current_leaf_iter = None;
+
+        let mut node = root;
+
+        // Traverse to the correct leaf
+        loop {
+            match node {
+                RopeNode::Leaf(lines) => {
+                    if index <= lines.len() {
+                        current_leaf_iter = Some(lines[index..].iter());
+                    } else {
+                        // If index is out of bounds, empty iterator
+                        current_leaf_iter = Some([].iter());
+                    }
+                    break;
+                }
+                RopeNode::Internal { left, right, line_count } => {
+                    stack.push(node);
+                    if index < *line_count {
+                        node = left;
+                    } else {
+                        index -= *line_count;
+                        node = right;
+                    }
+                }
+            }
+        }
+
+        Self {
+            stack,
+            current_leaf: current_leaf_iter,
+        }
+    }
+
+    fn descend_leftmost(&mut self, mut node: &'a RopeNode<Line>) {
+        while let RopeNode::Internal { left, .. } = node {
+            self.stack.push(node);
+            node = left;
+        }
+
+        if let RopeNode::Leaf(lines) = node {
+            self.current_leaf = Some(lines.iter());
+        }
+    }
+}
+
+impl<'a, Line> Iterator for RopeLinesIterator<'a, Line> {
+    type Item = &'a Line;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(ref mut leaf_iter) = self.current_leaf {
+            if let Some(line) = leaf_iter.next() {
+                return Some(line);
+            }
+        }
+
+        // Walk up the stack and explore right siblings
+        while let Some(parent) = self.stack.pop() {
+            if let RopeNode::Internal { right, .. } = parent {
+                self.descend_leftmost(&right);
+                return self.next();
+            }
+        }
+
+        None
+    }
+}
