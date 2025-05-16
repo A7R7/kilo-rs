@@ -1,15 +1,15 @@
 #[derive(Debug)]
-enum RopeNode {
-    Leaf(Vec<String>), // stores lines of text
+enum RopeNode<Line> {
+    Leaf(Vec<Line>), // stores lines of text
     Internal {
-        left: Box<RopeNode>,
-        right: Box<RopeNode>,
+        left: Box<RopeNode<Line>>,
+        right: Box<RopeNode<Line>>,
         line_count: usize, // total lines in left subtree
     },
 }
 
-impl RopeNode {
-    pub fn from_lines(lines: Vec<String>) -> Self {
+impl<Line> RopeNode<Line> {
+    pub fn from_lines(lines: Vec<Line>) -> Self {
         RopeNode::Leaf(lines)
     }
 
@@ -20,7 +20,7 @@ impl RopeNode {
         }
     }
 
-    fn get_line_mut<'a>(&'a mut self, index: usize) -> Option<&'a mut String> {
+    fn get_line_mut<'a>(&'a mut self, index: usize) -> Option<&'a mut Line> {
         match self {
             RopeNode::Leaf(lines) => lines.get_mut(index),
             RopeNode::Internal { left, right, line_count } => {
@@ -33,7 +33,7 @@ impl RopeNode {
         }
     }
 
-    fn get_line(&self, index: usize) -> Option<&String> {
+    fn get_line(&self, index: usize) -> Option<&Line> {
         match self {
             RopeNode::Leaf(lines) => lines.get(index),
             RopeNode::Internal { left, right, line_count } => {
@@ -46,7 +46,7 @@ impl RopeNode {
         }
     }
 
-    pub fn insert_line(&mut self, index: usize, line: String) {
+    pub fn insert_line(&mut self, index: usize, line: Line) {
         match self {
             RopeNode::Leaf(lines) => {
                 lines.insert(index, line);
