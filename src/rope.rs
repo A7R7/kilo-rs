@@ -77,37 +77,4 @@ impl<Line> RopeNode<Line> {
             }
         }
     }
-
-    pub fn break_line(&mut self, index: usize, char_idx: usize) {
-        if let Some(line) = self.get_line_mut(index) {
-            let new_line = line.split_off(char_idx);
-            self.insert_line(index + 1, new_line);
-        }
-    }
-
-    pub fn concat_lines(&mut self, first_index: usize) {
-        if let (Some(line1), Some(line2)) = (
-            self.get_line_mut(first_index),
-            self.get_line(first_index + 1).cloned(),
-        ) {
-            line1.push_str(&line2);
-            self.delete_line(first_index + 1);
-        }
-    }
-
-    pub fn insert_char(&mut self, row: usize, col: usize, c: char) {
-        if let Some(line) = self.get_line_mut(row) {
-            if col <= line.len() {
-                line.insert(col, c);
-            }
-        }
-    }
-
-    pub fn delete_char(&mut self, row: usize, col: usize) {
-        if let Some(line) = self.get_line_mut(row) {
-            if col < line.len() {
-                line.remove(col);
-            }
-        }
-    }
 }
