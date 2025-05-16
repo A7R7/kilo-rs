@@ -82,7 +82,7 @@ impl Editor {
     pub fn scroll(&mut self) {
         self.rx = 0;
         if self.cy < self.rows.len() {
-            self.rx = Self::row_cx_to_rx(&self.rows[self.cy].chars, self.cx).unwrap();
+            self.rx = self.rows[self.cy].cx_to_rx(self.cx);
         }
 
         if self.cy < self.row_off {

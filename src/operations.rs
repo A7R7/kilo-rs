@@ -2,17 +2,6 @@ use crate::editor::{Editor, EditorRow};
 use anyhow::Result;
 
 impl Editor {
-    pub fn row_cx_to_rx(chars: &str, cx: usize) ->Result<usize> {
-        let mut rx = 0usize;
-        for i in 0..cx {
-            if chars.chars().nth(i) == Some('\t') {
-                rx += (8 - 1) - (rx % 8)
-            }
-            rx += 1;
-        }
-        Ok(rx)
-    }
-
     pub fn append_row(&mut self, chars: &str) {
         self.rows.push(EditorRow::new(chars));
     }
@@ -20,7 +9,7 @@ impl Editor {
     pub fn insert_row(&mut self, at: usize, chars: &str) {
         self.rows.insert(at, EditorRow::new(chars));
     }
-    
+
     pub fn insert_char(&mut self, c: char) {
         if self.cy == self.rows.len() {
             self.append_row("");
@@ -114,6 +103,17 @@ impl EditorRow {
             }
         }
         render
+    }
+
+    pub fn cx_to_rx(&self, cx: usize) -> usize {
+        let mut rx = 0usize;
+        for i in 0..cx {
+            if self.chars.chars().nth(i) == Some('\t') {
+                rx += (8 - 1) - (rx % 8)
+            }
+            rx += 1;
+        }
+        rx
     }
 
 }
