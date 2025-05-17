@@ -1,4 +1,5 @@
-use crate::editor::Editor;
+use crate::editor::*;
+use crate::rope::*;
 
 use std::fs::{File, OpenOptions};
 use std::io::{self, BufRead, Write};
@@ -8,20 +9,22 @@ impl Editor {
     pub fn open_file(&mut self, file_name: &str) -> Result<()>  {
         let file = File::open(file_name).context("Failed to open file")?;
         let reader = io::BufReader::new(file);
+        let mut builder = RopeBuilder::<EditorRow>::new();
         for line in reader.lines() {
             let mut line = line?;
             while line.ends_with(['\n', '\r']) {
                 line.pop();
             }
-            self.append_row(&line);
+            builder.insert(EditorRow::new(&line));
         }
+        self.rows = builder.build().unwrap();
         self.file_name = file_name.to_string();
         Ok(())
     }
 
     pub fn rows_to_string(&self) -> String {
         let mut buf = String::new();
-        for row in &self.rows {
+        for row in self.rows.lines() {
             buf.push_str(&row.chars);
             buf.push_str("\n");
         }        

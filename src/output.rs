@@ -14,10 +14,10 @@ const NORMAL_COLOR_CMD: &str = "\x1b[m";
 impl Editor {
     fn draw_rows_str(&self) -> String {
         let mut buf = String::new();
+        let mut iter = self.rows.from_index(self.row_off);
         for y in 0..=(self.screenrows - 1) {
-            let file_row = y + self.row_off;
-            if file_row < self.rows.len() {
-                let row_str = &self.rows[file_row].render;
+            if let Some(line) = iter.next() { 
+                let row_str = &line.render;
                 if row_str.chars().count() > self.col_off {
                     let (start, _) = row_str.char_indices().nth(self.col_off).unwrap();
                     let end = if let Some((idx, _)) =
@@ -45,7 +45,7 @@ impl Editor {
         let status_left = format!(
             " {:.20} - {} lines{}",
             self.file_name,
-            self.rows.len(),
+            self.rows.count(),
             if self.dirty { " modified" } else { "" }
         );
         let status_right = format!(" {}:{} ", self.cy, self.cx);
@@ -81,8 +81,8 @@ impl Editor {
 
     pub fn scroll(&mut self) {
         self.rx = 0;
-        if self.cy < self.rows.len() {
-            self.rx = self.rows[self.cy].cx_to_rx(self.cx);
+        if self.cy < self.rows.count() {
+            self.rx = self.rows.get_line(self.cy).cx_to_rx(self.cx);
         }
 
         if self.cy < self.row_off {

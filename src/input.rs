@@ -38,7 +38,7 @@ impl Editor {
                 }
             }
             ARROW_DOWN => {
-                if self.cy < self.rows.len() - 1 {
+                if self.cy < self.rows.count() - 1 {
                     self.cy += 1;
                 }
             }
@@ -47,13 +47,13 @@ impl Editor {
                     self.cx -= 1;
                 } else if self.cy > 0{
                     self.cy -= 1;
-                    self.cx = self.rows[self.cy].chars.chars().count();
+                    self.cx = self.rows.get_line(self.cy).len();
                 }
             }
             ARROW_RIGHT => {
-                if self.cx < self.rows[self.cy].chars.chars().count() {
+                if self.cx < self.rows.get_line(self.cy).len() {
                     self.cx += 1;
-                } else if self.cy < self.rows.len() - 1{
+                } else if self.cy < self.rows.count() - 1{
                     self.cy += 1;
                     self.cx = 0;
                 }
@@ -61,10 +61,10 @@ impl Editor {
             _ => {}
         }
 
-        if self.cy < self.rows.len() {
-            let line = &self.rows[self.cy].chars;
-            if self.cx > line.chars().count() {
-                self.cx = line.chars().count();
+        if self.cy < self.rows.count() {
+            let line = &self.rows.get_line(self.cy);
+            if self.cx > line.len() {
+                self.cx = line.len();
             }
         }
     }
@@ -91,8 +91,8 @@ impl Editor {
                     self.cy = self.row_off;
                 } else if key == PAGE_DOWN {
                     self.cy = self.row_off + self.screenrows - 1;
-                    if self.cy > self.rows.len() {
-                        self.cy = self.rows.len();
+                    if self.cy > self.rows.count() {
+                        self.cy = self.rows.count();
                     }
                 }
                 for _ in 1..= (self.screenrows - 1) {
@@ -105,8 +105,8 @@ impl Editor {
                 self.cx = 0;
             }
             END_KEY => {
-                if self.cy < self.rows.len() {
-                    self.cx = self.rows[self.cy].chars.chars().count();
+                if self.cy < self.rows.count() {
+                    self.cx = self.rows.get_line(self.cy).len();
                 }
             }
             NEWLINE => {

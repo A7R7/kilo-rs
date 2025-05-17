@@ -1,5 +1,5 @@
 #[derive(Debug)]
-enum RopeNode<Line> {
+pub enum RopeNode<Line> {
     Leaf(Vec<Line>), // stores lines of text
     Internal {
         left: Box<RopeNode<Line>>,
@@ -19,8 +19,7 @@ impl<Line> Default for RopeNode<Line> {
     }
 }
 
-impl<Line> RopeNode<Line> 
-{
+impl<Line> RopeNode<Line> {
     pub fn from_lines(mut lines: Vec<Line>) -> Self {
         if lines.len() <= MAX_LEAF_SIZE {
             RopeNode::Leaf(lines)
@@ -35,7 +34,7 @@ impl<Line> RopeNode<Line>
                 left,
                 right,
                 left_count: lc,
-                count: lc + rc
+                count: lc + rc,
             }
         }
     }
@@ -48,9 +47,9 @@ impl<Line> RopeNode<Line>
         }
     }
 
-    pub fn get_line_mut<'a>(&'a mut self, index: usize) -> Option<&'a mut Line> {
+    pub fn get_line_mut<'a>(&'a mut self, index: usize) -> &'a mut Line {
         match self {
-            RopeNode::Leaf(lines) => lines.get_mut(index),
+            RopeNode::Leaf(lines) => lines.get_mut(index).unwrap(),
             RopeNode::Internal {
                 left,
                 right,
@@ -66,9 +65,9 @@ impl<Line> RopeNode<Line>
         }
     }
 
-    pub fn get_line(&self, index: usize) -> Option<&Line> {
+    pub fn get_line(&self, index: usize) -> &Line {
         match self {
-            RopeNode::Leaf(lines) => lines.get(index),
+            RopeNode::Leaf(lines) => lines.get(index).unwrap(),
             RopeNode::Internal {
                 left,
                 right,
@@ -88,6 +87,9 @@ impl<Line> RopeNode<Line>
         match self {
             RopeNode::Leaf(lines) => {
                 lines.insert(index, line);
+                if lines.len() > MAX_LEAF_SIZE {
+                    *self = self.split_leaf();
+                }
             }
             RopeNode::Internal {
                 left,
@@ -107,10 +109,10 @@ impl<Line> RopeNode<Line>
         }
     }
 
-    pub fn delete_line(&mut self, index: usize) {
+    pub fn delete_line(&mut self, index: usize) -> Line {
         match self {
             RopeNode::Leaf(lines) => {
-                lines.remove(index);
+                lines.remove(index)
             }
             RopeNode::Internal {
                 left,
@@ -118,14 +120,46 @@ impl<Line> RopeNode<Line>
                 left_count,
                 count,
             } => {
-                if index < *left_count {
-                    left.delete_line(index);
+                let line = if index < *left_count {
                     *left_count -= 1;
+                    left.delete_line(index)
                 } else {
-                    right.delete_line(index - *left_count);
-                }
+                    right.delete_line(index - *left_count)
+                };
                 *count -= 1;
+                self.try_merge_children();
                 self.rebalance();
+                line
+            }
+        }
+    }
+
+    fn split_leaf(&mut self) -> RopeNode<Line> {
+        if let RopeNode::Leaf(lines) = std::mem::take(self) {
+            Self::from_lines(lines)
+        } else {
+            panic!("Called split_leaf on non-leaf node");
+        }
+    }
+
+    fn try_merge_children(&mut self) {
+        if let RopeNode::Internal {
+            left,
+            right,
+            ..
+        } = self
+        {
+            // Try to merge if both children are leaves and combined size is acceptable
+            match (&mut **left, &mut **right) {
+                (RopeNode::Leaf(l_lines), RopeNode::Leaf(r_lines)) => {
+                    if l_lines.len() + r_lines.len() <= MAX_LEAF_SIZE {
+                        let mut merged = Vec::with_capacity(l_lines.len() + r_lines.len());
+                        merged.append(l_lines);
+                        merged.append(r_lines);
+                        *self = RopeNode::Leaf(merged);
+                    }
+                }
+                _ => {}
             }
         }
     }
@@ -205,28 +239,20 @@ impl<Line> RopeNode<Line>
             }
         }
     }
-}
 
-pub struct RopeLinesIterator<'a, Line> {
-    stack: Vec<&'a RopeNode<Line>>,
-    current_leaf: Option<std::slice::Iter<'a, Line>>,
-}
-
-impl<'a, Line> RopeLinesIterator<'a, Line> {
-    pub fn from_index(root: &'a RopeNode<Line>, mut index: usize) -> Self {
+    // line iterator
+    pub fn from_index(&self, mut index: usize) -> RopeLinesIterator<Line> {
         let mut stack = Vec::new();
         let mut current_leaf_iter = None;
 
-        let mut node = root;
+        let mut node = self;
 
-        // Traverse to the correct leaf
         loop {
             match node {
                 RopeNode::Leaf(lines) => {
                     if index <= lines.len() {
                         current_leaf_iter = Some(lines[index..].iter());
                     } else {
-                        // If index is out of bounds, empty iterator
                         current_leaf_iter = Some([].iter());
                     }
                     break;
@@ -248,12 +274,24 @@ impl<'a, Line> RopeLinesIterator<'a, Line> {
             }
         }
 
-        Self {
+        RopeLinesIterator {
             stack,
             current_leaf: current_leaf_iter,
         }
     }
 
+    pub fn lines(&self) -> RopeLinesIterator<Line> {
+        self.from_index(0)
+    }
+
+}
+
+pub struct RopeLinesIterator<'a, Line> {
+    stack: Vec<&'a RopeNode<Line>>,
+    current_leaf: Option<std::slice::Iter<'a, Line>>,
+}
+
+impl<'a, Line> RopeLinesIterator<'a, Line> {
     fn descend_leftmost(&mut self, mut node: &'a RopeNode<Line>) {
         while let RopeNode::Internal { left, .. } = node {
             self.stack.push(node);
@@ -285,5 +323,79 @@ impl<'a, Line> Iterator for RopeLinesIterator<'a, Line> {
         }
 
         None
+    }
+}
+
+pub struct RopeBuilder<Line> {
+    leaf_buffer: Vec<Line>,
+    nodes: Vec<RopeNode<Line>>,
+}
+
+impl<Line> RopeBuilder<Line> {
+    pub fn new() -> Self {
+        Self {
+            leaf_buffer: Vec::with_capacity(MAX_LEAF_SIZE),
+            nodes: Vec::new(),
+        }
+    }
+
+    pub fn insert(&mut self, line: Line) {
+        self.leaf_buffer.push(line);
+        if self.leaf_buffer.len() >= MAX_LEAF_SIZE {
+            self.flush_leaf();
+        }
+    }
+
+    fn flush_leaf(&mut self) {
+        if !self.leaf_buffer.is_empty() {
+            let leaf = RopeNode::Leaf(std::mem::take(&mut self.leaf_buffer));
+            self.nodes.push(leaf);
+        }
+    }
+
+    pub fn build(mut self) -> Option<RopeNode<Line>> {
+        self.flush_leaf();
+        if self.nodes.is_empty() {
+            return None;
+        }
+        Some(Self::build_balanced(self.nodes))
+    }
+
+    fn build_balanced(mut nodes: Vec<RopeNode<Line>>) -> RopeNode<Line> {
+        while nodes.len() > 1 {
+            let mut next_level = Vec::with_capacity((nodes.len() + 1) / 2);
+            let mut i = 0;
+            while i + 1 < nodes.len() {
+                let left = Box::new(nodes[i].take());
+                let right = Box::new(nodes[i + 1].take());
+                let lc = left.count();
+                let rc = right.count();
+                next_level.push(RopeNode::Internal {
+                    left,
+                    right,
+                    left_count: lc,
+                    count: lc + rc,
+                });
+                i += 2;
+            }
+            if i < nodes.len() {
+                next_level.push(nodes[i].take());
+            }
+            nodes = next_level;
+        }
+        nodes.pop().unwrap()
+    }
+}
+
+trait Take<T> {
+    fn take(&mut self) -> T;
+}
+
+impl<T> Take<T> for T
+where
+    T: Default,
+{
+    fn take(&mut self) -> T {
+        std::mem::take(self)
     }
 }

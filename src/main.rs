@@ -3,8 +3,8 @@ mod terminal;
 mod input;
 mod output;
 mod file_io;
-mod row_operations;
-mod editor_operations;
+mod operations;
+mod rope;
 
 use editor::Editor;
 use anyhow::{Result, Context};
