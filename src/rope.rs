@@ -4,43 +4,81 @@ enum RopeNode<Line> {
     Internal {
         left: Box<RopeNode<Line>>,
         right: Box<RopeNode<Line>>,
-        line_count: usize, // total lines in left subtree
+        left_count: usize,
+        count: usize, // total lines in left subtree
     },
 }
 
-impl<Line> RopeNode<Line> {
-    pub fn from_lines(lines: Vec<Line>) -> Self {
-        RopeNode::Leaf(lines)
-    }
+const BALANCE_RATIO: f64 = 2.0 / 3.0;
+const MAX_LEAF_SIZE: usize = 64;
+const MIN_LEAF_SIZE: usize = 16;
 
-    pub fn total_lines(&self) -> usize {
-        match self {
-            RopeNode::Leaf(lines) => lines.len(),
-            RopeNode::Internal { left, right, .. } => left.total_lines() + right.total_lines(),
+impl<Line> Default for RopeNode<Line> {
+    fn default() -> Self {
+        RopeNode::Leaf(Vec::new())
+    }
+}
+
+impl<Line> RopeNode<Line> 
+{
+    pub fn from_lines(mut lines: Vec<Line>) -> Self {
+        if lines.len() <= MAX_LEAF_SIZE {
+            RopeNode::Leaf(lines)
+        } else {
+            let mid = lines.len() / 2;
+            let right_lines: Vec<Line> = lines.drain(mid..).collect();
+            let left = Box::new(RopeNode::from_lines(lines));
+            let right = Box::new(RopeNode::from_lines(right_lines));
+            let lc = left.count();
+            let rc = right.count();
+            RopeNode::Internal {
+                left,
+                right,
+                left_count: lc,
+                count: lc + rc
+            }
         }
     }
 
-    fn get_line_mut<'a>(&'a mut self, index: usize) -> Option<&'a mut Line> {
+    #[inline]
+    pub fn count(&self) -> usize {
+        match self {
+            RopeNode::Leaf(lines) => lines.len(),
+            RopeNode::Internal { count, .. } => *count,
+        }
+    }
+
+    pub fn get_line_mut<'a>(&'a mut self, index: usize) -> Option<&'a mut Line> {
         match self {
             RopeNode::Leaf(lines) => lines.get_mut(index),
-            RopeNode::Internal { left, right, line_count } => {
-                if index < *line_count {
+            RopeNode::Internal {
+                left,
+                right,
+                left_count,
+                ..
+            } => {
+                if index < *left_count {
                     left.get_line_mut(index)
                 } else {
-                    right.get_line_mut(index - *line_count)
+                    right.get_line_mut(index - *left_count)
                 }
             }
         }
     }
 
-    fn get_line(&self, index: usize) -> Option<&Line> {
+    pub fn get_line(&self, index: usize) -> Option<&Line> {
         match self {
             RopeNode::Leaf(lines) => lines.get(index),
-            RopeNode::Internal { left, right, line_count } => {
-                if index < *line_count {
+            RopeNode::Internal {
+                left,
+                right,
+                left_count,
+                ..
+            } => {
+                if index < *left_count {
                     left.get_line(index)
                 } else {
-                    right.get_line(index - *line_count)
+                    right.get_line(index - *left_count)
                 }
             }
         }
@@ -51,13 +89,20 @@ impl<Line> RopeNode<Line> {
             RopeNode::Leaf(lines) => {
                 lines.insert(index, line);
             }
-            RopeNode::Internal { left, right, line_count } => {
-                if index <= *line_count {
+            RopeNode::Internal {
+                left,
+                right,
+                left_count,
+                count,
+            } => {
+                if index <= *left_count {
                     left.insert_line(index, line);
-                    *line_count += 1;
+                    *left_count += 1;
                 } else {
-                    right.insert_line(index - *line_count, line);
+                    right.insert_line(index - *left_count, line);
                 }
+                *count += 1;
+                self.rebalance();
             }
         }
     }
@@ -67,18 +112,100 @@ impl<Line> RopeNode<Line> {
             RopeNode::Leaf(lines) => {
                 lines.remove(index);
             }
-            RopeNode::Internal { left, right, line_count } => {
-                if index < *line_count {
+            RopeNode::Internal {
+                left,
+                right,
+                left_count,
+                count,
+            } => {
+                if index < *left_count {
                     left.delete_line(index);
-                    *line_count -= 1;
+                    *left_count -= 1;
                 } else {
-                    right.delete_line(index - *line_count);
+                    right.delete_line(index - *left_count);
                 }
+                *count -= 1;
+                self.rebalance();
+            }
+        }
+    }
+
+    fn rebalance(&mut self) {
+        if let RopeNode::Internal { left, right, .. } = self {
+            let lc = left.count();
+            let rc = right.count();
+            if lc > 2 * rc + 1 {
+                self.rotate_right();
+            } else if rc > 2 * lc + 1 {
+                self.rotate_left();
+            }
+        }
+    }
+
+    fn rotate_left(&mut self) {
+        if let RopeNode::Internal {
+            left,
+            right,
+            left_count,
+            count,
+        } = std::mem::take(self)
+        {
+            if let RopeNode::Internal {
+                left: r_left,
+                right: r_right,
+                left_count: r_lc,
+                count: r_c,
+            } = *right
+            {
+                let l_c = left_count;
+                let r_lc = r_left.count();
+                *self = RopeNode::Internal {
+                    left: Box::new(RopeNode::Internal {
+                        left,
+                        right: r_left,
+                        left_count: l_c,
+                        count: l_c + r_lc,
+                    }),
+                    right: r_right,
+                    left_count: l_c + r_lc,
+                    count,
+                };
+            }
+        }
+    }
+
+    fn rotate_right(&mut self) {
+        if let RopeNode::Internal {
+            left,
+            right,
+            left_count,
+            count,
+        } = std::mem::take(self)
+        {
+            if let RopeNode::Internal {
+                left: l_left,
+                right: l_right,
+                left_count: l_lc,
+                count: l_c,
+            } = *left
+            {
+                let l_rc = l_right.count();
+                let r_c = right.count();
+                *self = RopeNode::Internal {
+                    left: l_left,
+                    right: Box::new(RopeNode::Internal {
+                        left: l_right,
+                        right,
+                        left_count: l_rc,
+                        count: l_rc + r_c,
+                    }),
+                    left_count: l_lc,
+                    count,
+                };
             }
         }
     }
 }
-
 
 pub struct RopeLinesIterator<'a, Line> {
     stack: Vec<&'a RopeNode<Line>>,
@@ -104,12 +231,17 @@ impl<'a, Line> RopeLinesIterator<'a, Line> {
                     }
                     break;
                 }
-                RopeNode::Internal { left, right, line_count } => {
+                RopeNode::Internal {
+                    left,
+                    right,
+                    left_count,
+                    ..
+                } => {
                     stack.push(node);
-                    if index < *line_count {
+                    if index < *left_count {
                         node = left;
                     } else {
-                        index -= *line_count;
+                        index -= *left_count;
                         node = right;
                     }
                 }
