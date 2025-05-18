@@ -9,9 +9,7 @@ pub enum RopeNode<Line> {
     },
 }
 
-const BALANCE_RATIO: f64 = 2.0 / 3.0;
 const MAX_LEAF_SIZE: usize = 64;
-const MIN_LEAF_SIZE: usize = 16;
 
 impl<Line> Default for RopeNode<Line> {
     fn default() -> Self {
@@ -187,8 +185,7 @@ impl<Line> RopeNode<Line> {
             if let RopeNode::Internal {
                 left: r_left,
                 right: r_right,
-                left_count: r_lc,
-                count: r_c,
+                ..
             } = *right
             {
                 let l_c = left_count;
@@ -212,15 +209,15 @@ impl<Line> RopeNode<Line> {
         if let RopeNode::Internal {
             left,
             right,
-            left_count,
             count,
+            ..
         } = std::mem::take(self)
         {
             if let RopeNode::Internal {
                 left: l_left,
                 right: l_right,
                 left_count: l_lc,
-                count: l_c,
+                ..
             } = *left
             {
                 let l_rc = l_right.count();
@@ -263,8 +260,8 @@ impl<Line> RopeNode<Line> {
                     left_count,
                     ..
                 } => {
-                    stack.push(node);
                     if index < *left_count {
+                        stack.push(node);
                         node = left;
                     } else {
                         index -= *left_count;
