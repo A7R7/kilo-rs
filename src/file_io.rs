@@ -2,6 +2,7 @@ use crate::editor::*;
 use crate::rope::*;
 
 use std::fs::{File, OpenOptions};
+use std::io::BufWriter;
 use std::io::{self, BufRead, Write};
 use anyhow::{anyhow, Context, Result};
 
@@ -43,15 +44,16 @@ impl Editor {
                 self.set_status_msg("Save aborted");
             }
         }
-        let buf = self.rows_to_string();
-        let mut file = OpenOptions::new()
+        let file = OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
             .open(&self.file_name)
             .context("Failed to open file for writing")?;
-        file.write_all(buf.as_bytes()).context("Failed to write to file")?;
-        self.set_status_msg(&format!("{} bytes written to disk", buf.len()));
+        let mut writer = BufWriter::new(file);
+        for row in self.rows.lines() {
+            writeln!(writer, "{}", row.chars)?; // writes a line with a newline
+        }
         self.dirty = false;
         Ok(())
     }
