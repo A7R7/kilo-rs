@@ -201,6 +201,13 @@ impl<Line> RopeNode<Line> {
                     left_count: l_c + r_lc,
                     count,
                 };
+            } else {
+                *self = RopeNode::Internal {
+                    left,
+                    right,
+                    left_count,
+                    count,
+                };
             }
         }
     }
@@ -209,6 +216,7 @@ impl<Line> RopeNode<Line> {
         if let RopeNode::Internal {
             left,
             right,
+            left_count,
             count,
             ..
         } = std::mem::take(self)
@@ -231,6 +239,13 @@ impl<Line> RopeNode<Line> {
                         count: l_rc + r_c,
                     }),
                     left_count: l_lc,
+                    count,
+                };
+            } else {
+                *self = RopeNode::Internal {
+                    left,
+                    right,
+                    left_count,
                     count,
                 };
             }
